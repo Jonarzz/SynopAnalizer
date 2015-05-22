@@ -1,5 +1,11 @@
 package com.nwpi.synop;
 
-public class SynopShip extends Synop {
+import java.util.ArrayList;
+
+public class SynopShip extends SynopMobile {
+
+	public SynopShip(ArrayList<String> stringArray) {
+		super(stringArray);
+	}
 
 }

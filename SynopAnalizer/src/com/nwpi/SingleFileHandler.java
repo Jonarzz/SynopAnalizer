@@ -44,11 +44,11 @@ public class SingleFileHandler {
 		getCurrentStringArray();
 		
 		if (currentStringArray.get(0) == Constants.LAND_STATION_CODE)
-			return new SynopLand();
+			return new SynopLand(currentStringArray);
 		else if (currentStringArray.get(0) == Constants.SHIP_STATION_CODE)
-			return new SynopShip();
+			return new SynopShip(currentStringArray);
 		else 
-			return new SynopMobile();
+			return new SynopMobileLand(currentStringArray);
 	}
 	
 	private void getCurrentStringArray() {
