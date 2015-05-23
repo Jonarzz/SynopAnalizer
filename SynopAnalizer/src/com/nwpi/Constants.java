@@ -17,7 +17,7 @@ public class Constants {
 	public static final String MOBILE_LAND_STATION_CODE = "OOXX";
 	
 	
-	////// BEGON YEAR-HOUR-WIND GROUP [YYHHW]
+	////// BEGIN YEAR-HOUR-WIND GROUP [YYHHW]
 	//
 	// WS - WIND SPEED
 	//
