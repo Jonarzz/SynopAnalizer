@@ -3,7 +3,7 @@ package com.nwpi;
 public class Constants {
 
 	public static final char UNKNOWN_CHAR = '/';
-	public static final String UNKNOWN_STRING = '//';
+	public static final String UNKNOWN_STRING = "//";
 
 	public static final String CHAPTER_3_CODE = "333";
 	public static final String CHAPTER_4_CODE = "444";
@@ -17,7 +17,7 @@ public class Constants {
 	public static final String MOBILE_LAND_STATION_CODE = "OOXX";
 	
 	
-	////// BEGON YEAR-HOUR-WIND GROUP [YYHHW]
+	////// BEGIN YEAR-HOUR-WIND GROUP [YYHHW]
 	//
 	// WS - WIND SPEED
 	//
