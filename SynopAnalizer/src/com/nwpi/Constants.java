@@ -3,7 +3,7 @@ package com.nwpi;
 public class Constants {
 
 	public static final char UNKNOWN_CHAR = '/';
-	public static final String UNKNOWN_STRING = "//";
+	public static final String UNKNOWN_STRING = '//';
 
 	public static final String CHAPTER_3_CODE = "333";
 	public static final String CHAPTER_4_CODE = "444";
@@ -17,7 +17,7 @@ public class Constants {
 	public static final String MOBILE_LAND_STATION_CODE = "OOXX";
 	
 	
-	////// BEGIN YEAR-HOUR-WIND GROUP [YYHHW]
+	////// BEGON YEAR-HOUR-WIND GROUP [YYHHW]
 	//
 	// WS - WIND SPEED
 	//
@@ -98,7 +98,7 @@ public class Constants {
 	// BEGIN CLOUDINESS-WIND-DIRECTION-SPEED [xyyzz]
 	//
 	// CLOUDINESS
-	// CLOUDINESS = x/8 OR:
+	// CLOUDINESS = x/8
 	// VALUES FROM '0' TO '9'
 	// '/' ACCEPTABLE
 	//
@@ -113,7 +113,119 @@ public class Constants {
 	public static final String WD_VARIABLE = "99";
 	//
 	// WIND SPEED
-	// WP = zz IN WD UNIT
+	// WS = zz [IN WD UNIT]
 	//
 	// END CLOUDINESS-WIND-DIRECTION-SPEED [xyyzz]
+	
+	
+	////// BEGIN 00-WIND GROUP [00xxx]
+	//
+	// WHEN WIND SPEED IS BIGGER THAN 99 THEN:
+	// WS = xxx IN WD UNIT
+	//
+	////// END 00-WIND GROUP [00xxx]
+	
+	
+	////// BEGIN 1-SIGN-TEMPERATURE GROUP [1sTTT]
+	//
+	// TEMPERATURE = (SIGN) TTT / 10
+	//
+	////// END 1-SIGN-TEMPERATURE GROUP [1sTTT]
+	
+	
+	////// BEGIN 2-SIGN-DEW GRUPE [2sDDD]
+	//
+	// DEW POINT = DDD / 10
+	//
+	////// END 2-SIGN-DEW GRUPE [2sDDD]
+	//
+	// OR
+	//
+	////// BEGIN 2-9-HUMIDITY GRUPE [29HHH]
+	//
+	// HUMIDITY = HHH [IN PER CENT]
+	// VALUES FROM "000" TO "100"
+	//
+	////// END 2-9-HUMIDITY GRUPE [29HHH]
+	
+	
+	////// BEGIN 3-PRESSURE GRUPE [3PPPP]
+	//
+	// PRESSURE = PPPP / 10 [IN HECTOPASCALS]
+	// BUT 0125 MEANS PRESSURE = 1012,5 hPa
+	//
+	////// END 3-PRESSURE GRUPE [3PPPP]
+	
+	
+	////// BEGIN 4-PRESSURE GRUPE [4PPPP]
+	//
+	// OLAĆ !!!
+	// NIE ROZUMIEM, CO TO ZA CINIENIE
+	//
+	////// END 4-PRESSURE GRUPE [4PPPP]
+	
+	
+	////// BEGIN 5-CHANGE-PRESSURE [5xPPP]
+	//
+	// PCT - PRESSURE CHANGE TYPE
+	// VALUES FROM '0' TO '8'
+	//
+	public static final char PCT_INCREASE_LOWER_LIMIT = '0';
+	public static final char PCT_INCREASE_UPPER_LIMIT = '3';
+	public static final char PCT_NO_CHANGE = '4';
+	public static final char PCT_DECREASE_LOWER_LIMIT = '5';
+	public static final char PCT_DECREASE_UPPER_LIMIT = '8';
+	//
+	// CHANGE VALUE = PPP / 10 IN HECTOPASCALS
+	//
+	////// END 5-CHANGE-PRESSURE [5xPPP]
+	
+	
+	////// BEGIN 6-DOWNFALL-TIME [6fffT]
+	//
+	// TD - TOTAL DOWNFALL
+	// SOP - SCOPE OF PROPORTIONALITY
+	// SOP MEANS TD = fff [IN MILIMETERS]
+	// SOD - SCOPE OF DECIMALS
+	// SOD MEANS TD = //f
+	// VALUES FROM "000" TO "999"
+	// fff = "989" MEANS 989 AND OVER
+	//
+	public static final String TD_SOP_LOWER_LIMIT = "000";
+	public static final String TD_SOP_UPPER_LIMIT = "989";
+	public static final String TD_TRACE = "990";
+	public static final String TD_SOD_LOWER_LIMIT = "991";
+	public static final String TD_SOD_UPPER_LIMIT = "999";
+	//
+	// DURATION TIME = 							// TODO
+	/*
+	1 – 6 h     4 – 24 h    7 – 3 h   
+
+	2 – 12 h    5 – 1 h     8 – 9 h
+
+	3 – 18 h    6 – 2 h     9 – 15 h
+	*/
+	//
+	////// END 6-DOWNFALL-TIME [6fffT]
+	
+	
+	////// BEGIN 7-TYPE GROUP [7xxyy]
+	//
+	// DUŻO TEGO								// TODO
+	//
+	////// END 7-TYPE GROUP [7xxyy]
+	
+	
+	////// BEGIN 8-CLOUDINESS-LOW-MEDIUM-HIGH GROUP [8clmh]
+	//
+	// RODZAJE CHMUR							// TODO
+	//
+	/////  END 8-CLOUDINESS-LOW-MEDIUM-HIGH GROUP [8clmh]
+	
+	
+	////// BEGIN 9-TIME [HHMM]
+	//
+	// TIME OF OBSERVATION = HH:MM
+	//
+	////// END 9-TIME [HHMM]
 }
