@@ -10,7 +10,7 @@ public class Synop {
 	protected int hourOfObservaton;
 	protected char windIndicator;
 	
-	public Synop(ArrayList<String> stringArray) {
+	public Synop(ArrayList<String> stringArray) {		
 		this.stringArray = stringArray;
 	}
 	

@@ -3,6 +3,7 @@ package com.nwpi;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+
 import com.nwpi.synop.*;
 
 public class SingleFileHandler {
@@ -43,9 +44,9 @@ public class SingleFileHandler {
 	private Synop createSynopObject() {
 		getCurrentStringArray();
 		
-		if (currentStringArray.get(0) == Constants.LAND_STATION_CODE)
+		if (currentStringArray.get(0).equals(Constants.LAND_STATION_CODE))
 			return new SynopLand(currentStringArray);
-		else if (currentStringArray.get(0) == Constants.SHIP_STATION_CODE)
+		else if (currentStringArray.get(0).equals(Constants.SHIP_STATION_CODE))
 			return new SynopShip(currentStringArray);
 		else 
 			return new SynopMobileLand(currentStringArray);
