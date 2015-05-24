@@ -21,6 +21,8 @@ public class DividedFileString {
 			String splitString[] = line.split(" ");
 			stringArrayList.add(new ArrayList<String>(Arrays.asList(splitString)));
 		}
+		
+		System.out.println(stringArrayList.size());
 	}
 	
 	public int length() {

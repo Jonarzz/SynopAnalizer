@@ -19,18 +19,10 @@ public class SingleFileHandler {
 	public SingleFileHandler(File file) {
 		this.file = file;
 
-		new Thread(new SynopObjectListCreator()).start();
+		createDividedFileString();
+		createSynopObjectList();
 	}
-	
-	private class SynopObjectListCreator implements Runnable {
-
-		public void run() {
-			createDividedFileString();
-			createSynopObjectList();
-		}
 		
-	}
-	
 	private void createDividedFileString() {
 		try {
 			dividedFileString = new DividedFileString(FileInputHandler.divideFileIntoStrings(file));

@@ -6,11 +6,14 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Observable;
 import java.util.Observer;
 
 import com.nwpi.SingleFileHandler;
+import com.nwpi.SynopProcessor;
+import com.nwpi.synop.Synop;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -64,7 +67,7 @@ public class SynopAnalizerController {
 		if (file == null)
 			return;
 
-		sfh = new SingleFileHandler(file);
+		createAndAnalizeSynop(file);
 
 		showFileSummaryDialog();
 	}
@@ -159,7 +162,7 @@ public class SynopAnalizerController {
 									numberOfNotOpenedFiles++;
 								}
 
-					    	sfh = new SingleFileHandler(filePath.toFile());
+							createAndAnalizeSynop(filePath.toFile());
 					    	numberOfOpenedFiles++;
 					    }
 					});
@@ -179,6 +182,26 @@ public class SynopAnalizerController {
 		Thread th = new Thread(task); 
 		th.setDaemon(true); 
 		th.start();
+	}
+	
+	private void createAndAnalizeSynop(File file) {
+		new Thread(new SynopObjectListCreator(file)).start();
+	}
+	
+	private class SynopObjectListCreator implements Runnable {
+		
+		private File file;
+		
+		public SynopObjectListCreator(File file) {
+			this.file = file;
+		}
+
+		public void run() {
+			sfh = new SingleFileHandler(file);
+			ArrayList<Synop> synopList = sfh.getSynopObjectList();
+			SynopProcessor.analizeSynopList(synopList);
+		}
+		
 	}
 	
 	private void showFileSummaryDialog() {
