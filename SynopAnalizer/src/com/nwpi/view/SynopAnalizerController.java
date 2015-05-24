@@ -39,6 +39,9 @@ public class SynopAnalizerController {
 	
 	private SingleFileHandler sfh;
 	
+	private File defaultDirectory;
+	private File userChosenDirectory;
+	
 	private int numberOfFilesToOpen, numberOfOpenedFiles, numberOfNotOpenedFiles;
 	
 	public void setStage(Stage stage) {
@@ -58,8 +61,11 @@ public class SynopAnalizerController {
 	private void openFile() {
 		File file = getUserChosenFile();
 		
+		if (file == null)
+			return;
+
 		sfh = new SingleFileHandler(file);
-		
+
 		showFileSummaryDialog();
 	}
 	
@@ -68,14 +74,18 @@ public class SynopAnalizerController {
 		fileChooser.setTitle("Open Synop file");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("Synop files", "*.new"));
 		
-		File defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
+		setDefaultDirectory();
 		fileChooser.setInitialDirectory(defaultDirectory);
 		
-		return fileChooser.showOpenDialog(stage);
+		userChosenDirectory = fileChooser.showOpenDialog(stage);
+		return userChosenDirectory;
 	}
 	
 	private void openDirectory() {		
 		URI userChosenDirectory = getUserChosenDirectory();
+		
+		if (userChosenDirectory == null)
+			return;
 
 		initializeNumbersForProgressBar(userChosenDirectory);
 		startProgressBarThread();
@@ -87,10 +97,21 @@ public class SynopAnalizerController {
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		directoryChooser.setTitle("Select directory with Synop files");
 		
-		File defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
+		setDefaultDirectory();
 		directoryChooser.setInitialDirectory(defaultDirectory);
 		
-		return directoryChooser.showDialog(stage).toURI();
+		userChosenDirectory = directoryChooser.showDialog(stage);
+		return userChosenDirectory.toURI();
+	}
+	
+	private void setDefaultDirectory() {
+		if (defaultDirectory == null || userChosenDirectory == null)
+			defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
+		else 
+			if (userChosenDirectory.isDirectory())
+				defaultDirectory = userChosenDirectory;
+			else
+				defaultDirectory = userChosenDirectory.getParentFile();				
 	}
 	
 	private void initializeNumbersForProgressBar(URI userChosenDirectory) {
@@ -105,7 +126,7 @@ public class SynopAnalizerController {
 			else
 				numberOfFilesToOpen++;
 	}
-	
+
 	private void startProgressBarThread() {
 		Task<Void> task = new Task<Void>() {
 			protected Void call() throws Exception {				
@@ -148,6 +169,8 @@ public class SynopAnalizerController {
 					analizeFileButton.setDisable(false);
 					analizeFoldersButton.setDisable(false);
 				}
+				
+				showDirectorySummaryDialog();
 								
 		        return null;
 			}
@@ -168,20 +191,24 @@ public class SynopAnalizerController {
 		alert.showAndWait();
 	}
 
-	// TODO show dialog after analizing is done (threads problems)
-	private void showDirectorySummaryDialog() {				
-		String dialogText = "Processed " + Integer.toString(numberOfOpenedFiles) + " of " + Integer.toString(numberOfFilesToOpen) + " files.";
-		
-		if (numberOfNotOpenedFiles > 0)
-			dialogText += " Couldn't process " + Integer.toString(numberOfNotOpenedFiles) + " files.";
-		
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.initStyle(StageStyle.UTILITY);
-		alert.setTitle("Folders analized");
-		alert.setHeaderText(null);
-		
-		alert.setContentText(dialogText);
-		
-		alert.showAndWait();
+	private void showDirectorySummaryDialog() {		
+		Platform.runLater(new Runnable() {
+			public void run() {
+				String dialogText = "Processed " + Integer.toString(numberOfOpenedFiles) + " of " + Integer.toString(numberOfFilesToOpen) + " files.";
+				
+				if (numberOfNotOpenedFiles > 0)
+					dialogText += " Couldn't process " + Integer.toString(numberOfNotOpenedFiles) + " files.";
+				
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.initStyle(StageStyle.UTILITY);
+				alert.setTitle("Folders analized");
+				alert.setHeaderText(null);
+				
+				alert.setContentText(dialogText);
+				
+				alert.showAndWait();
+			}
+		});
+
 	}
 }

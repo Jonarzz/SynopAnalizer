@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.nwpi.view.SynopAnalizerController;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -31,15 +32,15 @@ public class SynopAnalizer extends Application {
 	
 	private void initRootLayout() {
 		try {
-            // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(SynopAnalizer.class.getResource("view/SynopAnalizer.fxml"));
             mainLayout = (AnchorPane)loader.load();
             
             SynopAnalizerController controller = (SynopAnalizerController)loader.getController();
             controller.setStage(primaryStage);
-
-            // Show the scene containing the root layout.
+            
+            primaryStage.setOnCloseRequest(e -> Platform.exit());
+            
             Scene scene = new Scene(mainLayout);
             primaryStage.setScene(scene);
             primaryStage.show();
