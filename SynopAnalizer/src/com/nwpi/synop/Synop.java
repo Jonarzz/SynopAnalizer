@@ -2,6 +2,8 @@ package com.nwpi.synop;
 
 import java.util.ArrayList;
 
+import com.nwpi.Constants;
+
 public class Synop {
 	
 	protected ArrayList<String> stringArray;
@@ -12,31 +14,48 @@ public class Synop {
 	
 	public Synop(ArrayList<String> stringArray) {		
 		this.stringArray = stringArray;
+		
 		getDayHourAndWindIndicator();
 	}
 	
 	protected void getDayHourAndWindIndicator() {
-		String dayHourAndWindIndicator = "/";
+		String dayHourAndWindIndicator = "";
 		
 		if (this instanceof SynopLand && stringArray.size() > 1)
 			dayHourAndWindIndicator = stringArray.get(1);
 		else if (stringArray.size() > 2)
 			dayHourAndWindIndicator = stringArray.get(2);
 		
-		if (testString(dayHourAndWindIndicator))
+		if (dayHourAndWindIndicator.length() != 5)
 			return;
 		
-		dayOfMonth = Integer.parseInt(dayHourAndWindIndicator.substring(0, 2));
-		hourOfObservation = Integer.parseInt(dayHourAndWindIndicator.substring(2, 4));
-		windIndicator = Character.getNumericValue(dayHourAndWindIndicator.charAt(4));
+		setDayOfMonth(dayHourAndWindIndicator);
+		setHourOfObservation(dayHourAndWindIndicator);
+		setWindIndicator(dayHourAndWindIndicator);
+	}
+
+	private void setDayOfMonth(String str) {
+		try {
+			dayOfMonth = Integer.parseInt(str.substring(0, 2));
+		} catch (NumberFormatException e) {
+			dayOfMonth = Constants.INITIAL_VALUE;
+		}
 	}
 	
-	private boolean testString(String str) {
-		for (char c : str.toCharArray())
-			if (c == '/')
-				return true;
-		
-		return false;		
+	private void setHourOfObservation(String str) {
+		try {
+			hourOfObservation = Integer.parseInt(str.substring(2, 4));
+		} catch (NumberFormatException e) {
+			hourOfObservation = Constants.INITIAL_VALUE;
+		}
+	}
+	
+	private void setWindIndicator(String str) {
+		try {
+			windIndicator = Character.getNumericValue(str.charAt(4));
+		} catch (NumberFormatException e) {
+			windIndicator = Constants.INITIAL_VALUE;
+		}
 	}
 	
 	public int getDayOfMonth() {

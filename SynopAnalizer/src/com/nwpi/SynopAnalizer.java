@@ -26,6 +26,7 @@ public class SynopAnalizer extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle(WINDOW_TITLE);
+		this.primaryStage.setResizable(false);
 		
 		initRootLayout();
 	}
@@ -38,6 +39,8 @@ public class SynopAnalizer extends Application {
             
             SynopAnalizerController controller = (SynopAnalizerController)loader.getController();
             controller.setStage(primaryStage);
+            controller.setInitialDefaultDirectory();
+            controller.setInitialButtonsClickability();
             
             primaryStage.setOnCloseRequest(e -> Platform.exit());
             

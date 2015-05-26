@@ -14,11 +14,9 @@ public class FileInputHandler {
 		String line;
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-		    while ((line = br.readLine()) != null) {
-		       stringList.add(line);
-		    }
+		    while ((line = br.readLine()) != null) 
+		       stringList.add(line);  
 		} catch (IOException e) {
-			// TODO error dialog
 			System.out.println("IOException was caught!");
 			e.printStackTrace();
 		}

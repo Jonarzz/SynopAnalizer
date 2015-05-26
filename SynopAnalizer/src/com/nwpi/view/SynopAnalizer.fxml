@@ -11,7 +11,7 @@
          <children>
             <Button fx:id="analizeFileButton" mnemonicParsing="false" onAction="#initialize" prefHeight="30.0" prefWidth="100.0" text="Analize a file" textAlignment="CENTER">
                <VBox.margin>
-                  <Insets left="100.0" top="50.0" />
+                  <Insets left="100.0" top="30.0" />
                </VBox.margin>
             </Button>
             <Button fx:id="analizeFoldersButton" mnemonicParsing="false" onAction="#initialize" prefHeight="30.0" prefWidth="100.0" text="Analize folders" textAlignment="CENTER">
@@ -21,9 +21,19 @@
             </Button>
             <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0">
                <VBox.margin>
-                  <Insets left="50.0" top="20.0" />
+                  <Insets left="50.0" top="10.0" />
                </VBox.margin>
             </ProgressBar>
+            <HBox alignment="CENTER">
+               <children>
+                  <Label fx:id="progressLabel" textAlignment="CENTER" />
+               </children>
+            </HBox>
+            <Button fx:id="cancelButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="100.0" text="Cancel">
+               <VBox.margin>
+                  <Insets left="100.0" top="10.0" />
+               </VBox.margin>
+            </Button>
          </children>
       </VBox>
    </children>

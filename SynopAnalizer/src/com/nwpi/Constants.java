@@ -1,6 +1,9 @@
 package com.nwpi;
 
 public class Constants {
+	
+	public static final int INITIAL_VALUE = -1000;
+	public static final int INITIAL_STATION_CODE = 0;
 
 	public static final char UNKNOWN_CHAR = '/';
 	public static final String UNKNOWN_STRING = "//";

@@ -22,13 +22,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Label;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-// TODO add Cancel button
 public class SynopAnalizerController {
 	
 	@FXML
@@ -37,6 +37,10 @@ public class SynopAnalizerController {
 	private Button analizeFoldersButton;
 	@FXML
 	private ProgressBar progressBar;
+	@FXML
+	private Label progressLabel;
+	@FXML
+	private Button cancelButton;
 	
 	private Stage stage;
 	
@@ -45,10 +49,24 @@ public class SynopAnalizerController {
 	private File defaultDirectory;
 	private File userChosenDirectory;
 	
+	private ArrayList<File> filesFromDirectory;
+	
 	private int numberOfFilesToOpen, numberOfOpenedFiles, numberOfNotOpenedFiles;
+	
+	private boolean cancelled;
 	
 	public void setStage(Stage stage) {
 		this.stage = stage;
+	}
+	
+	public void setInitialDefaultDirectory() {
+		defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
+	}
+	
+	public void setInitialButtonsClickability() {
+		analizeFileButton.setDisable(false);
+		analizeFoldersButton.setDisable(false);
+		cancelButton.setDisable(true);
 	}
 	
 	@FXML
@@ -56,19 +74,26 @@ public class SynopAnalizerController {
 		analizeFileButton.setOnAction((event) -> {
 			openFile();
 		});
+		
 		analizeFoldersButton.setOnAction((event) -> {
 			openDirectory();
+		});
+		
+		cancelButton.setOnAction((event) -> {
+			cancel();
 		});
 	}
 	
 	private void openFile() {
+		cancelled = false;
+		
 		File file = getUserChosenFile();
 		
 		if (file == null)
 			return;
 
 		createAndAnalizeSynop(file);
-
+		
 		showFileSummaryDialog();
 	}
 	
@@ -84,7 +109,9 @@ public class SynopAnalizerController {
 		return userChosenDirectory;
 	}
 	
-	private void openDirectory() {		
+	private void openDirectory() {	
+		cancelled = false;
+		
 		URI userChosenDirectory = getUserChosenDirectory();
 		
 		if (userChosenDirectory == null)
@@ -108,19 +135,23 @@ public class SynopAnalizerController {
 	}
 	
 	private void setDefaultDirectory() {
-		if (defaultDirectory == null || userChosenDirectory == null)
-			defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
-		else 
-			if (userChosenDirectory.isDirectory())
-				defaultDirectory = userChosenDirectory;
-			else
-				defaultDirectory = userChosenDirectory.getParentFile();				
+		if (userChosenDirectory == null)
+			return;
+		
+		if (userChosenDirectory.isDirectory())
+			defaultDirectory = userChosenDirectory;
+		else
+			defaultDirectory = userChosenDirectory.getParentFile();				
 	}
 	
-	private void initializeNumbersForProgressBar(URI userChosenDirectory) {
+	private void initializeNumbersForProgressBar() {
 		numberOfOpenedFiles = 0;
 		numberOfNotOpenedFiles = 0;
 		numberOfFilesToOpen = 0;
+	}
+
+	private void initializeNumbersForProgressBar(URI userChosenDirectory) {
+		initializeNumbersForProgressBar();
 		
 		File[] files = new File(userChosenDirectory).listFiles();
 		for (File f : files)
@@ -132,15 +163,29 @@ public class SynopAnalizerController {
 
 	private void startProgressBarThread() {
 		Task<Void> task = new Task<Void>() {
-			protected Void call() throws Exception {				
-				while (numberOfOpenedFiles <= numberOfFilesToOpen)
-					updateProgress(numberOfOpenedFiles, numberOfFilesToOpen);		
+			protected Void call() throws Exception {	
+				updateProgress(0, 1);	
+				updateMessage("0/" + Integer.toString(numberOfFilesToOpen));
+				
+				while (numberOfOpenedFiles <= numberOfFilesToOpen) {
+					if (cancelled)
+						break;
+					
+					updateProgress(numberOfOpenedFiles, numberOfFilesToOpen);	
+					updateMessage(Integer.toString(numberOfOpenedFiles) + "/" + Integer.toString(numberOfFilesToOpen));
+				}
+				
+				updateProgress(0, 1);	
+				updateMessage("");
+				cancel();
 				
 		        return null;
 			}
 		};
 		
 		progressBar.progressProperty().bind(task.progressProperty());
+		progressLabel.textProperty().bind(task.messageProperty());
+		
 		Thread th = new Thread(task); 
 		th.setDaemon(true); 
 		th.start(); 	
@@ -151,29 +196,30 @@ public class SynopAnalizerController {
 			protected Void call() throws Exception {	
 				analizeFileButton.setDisable(true);
 				analizeFoldersButton.setDisable(true);
+				cancelButton.setDisable(false);
 				
-				try {
-					Files.walk(Paths.get(userChosenDirectory)).forEach(filePath -> {
-						if (Files.isRegularFile(filePath)) {
-							while (Thread.activeCount() > 50)
-								try {
-									Thread.sleep(10);
-								} catch (InterruptedException e) {
-									numberOfNotOpenedFiles++;
-								}
-
-							createAndAnalizeSynop(filePath.toFile());
-					    	numberOfOpenedFiles++;
-					    }
-					});
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					analizeFileButton.setDisable(false);
-					analizeFoldersButton.setDisable(false);
+				filesFromDirectory = new ArrayList<File>();
+				getFilesFromDirectory(new File(userChosenDirectory).listFiles());
+				
+				for (File file : filesFromDirectory) {
+					if (cancelled)
+						break;
+					
+					while (Thread.activeCount() > 50)
+						try {
+							Thread.sleep(10);
+						} catch (InterruptedException e) {
+							numberOfNotOpenedFiles++;
+						}
+					
+					createAndAnalizeSynop(file);
+					numberOfOpenedFiles++;
 				}
+
+				setInitialButtonsClickability();
 				
-				showDirectorySummaryDialog();
+				if (!cancelled)
+					showDirectorySummaryDialog();
 								
 		        return null;
 			}
@@ -182,6 +228,14 @@ public class SynopAnalizerController {
 		Thread th = new Thread(task); 
 		th.setDaemon(true); 
 		th.start();
+	}
+	
+	private void getFilesFromDirectory(File[] directory) {
+		for (File file : directory)
+			if (file.isDirectory())
+				getFilesFromDirectory(file.listFiles());
+			else
+				filesFromDirectory.add(file);
 	}
 	
 	private void createAndAnalizeSynop(File file) {
@@ -232,6 +286,23 @@ public class SynopAnalizerController {
 				alert.showAndWait();
 			}
 		});
-
+	}
+	
+	private void cancel() {
+		cancelled = true;
+		unbindProgress();
+		initializeNumbersForProgressBar();
+		clearProgress();
+		setInitialButtonsClickability();
+	}
+	
+	private void unbindProgress() {
+		progressBar.progressProperty().unbind();
+		progressLabel.textProperty().unbind();
+	}
+	
+	private void clearProgress() {
+		progressBar.setProgress(0);
+		progressLabel.setText("");
 	}
 }

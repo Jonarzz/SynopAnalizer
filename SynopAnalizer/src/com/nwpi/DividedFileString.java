@@ -5,35 +5,33 @@ import java.util.Arrays;
 
 public class DividedFileString {
 	
-	private ArrayList<String> stringList;
-	private ArrayList<ArrayList<String>> stringArrayList;
+	private ArrayList<String> stringsFromFile;
+	private ArrayList<ArrayList<String>> dividedStringsArray;
 	
-	public DividedFileString(ArrayList<String> stringList) {
-		this.stringList = stringList;
+	public DividedFileString(ArrayList<String> stringsFromFile) {
+		this.stringsFromFile = stringsFromFile;
 		
-		createStringArrayList();
+		createDividedStringsArray();
 	}
 	
-	public void createStringArrayList() {
-		stringArrayList = new ArrayList<ArrayList<String>>();
+	public void createDividedStringsArray() {
+		dividedStringsArray = new ArrayList<ArrayList<String>>();
 		
-		for (String line : stringList) {
+		for (String line : stringsFromFile) {
 			String splitString[] = line.split(" ");
-			stringArrayList.add(new ArrayList<String>(Arrays.asList(splitString)));
+			dividedStringsArray.add(new ArrayList<String>(Arrays.asList(splitString)));
 		}
-		
-		System.out.println(stringArrayList.size());
 	}
 	
 	public int length() {
-		return stringList.size();
+		return stringsFromFile.size();
 	}
 	
-	public ArrayList<ArrayList<String>> getStringArrayList() {
-		return stringArrayList;	
+	public ArrayList<ArrayList<String>> getDividedStringsArray() {
+		return dividedStringsArray;	
 	}
 	
-	public ArrayList<String> getSingleStringArray(int index) {
-		return stringArrayList.get(index);
+	public ArrayList<String> getSingleDividedString(int index) {
+		return dividedStringsArray.get(index);
 	}
 }

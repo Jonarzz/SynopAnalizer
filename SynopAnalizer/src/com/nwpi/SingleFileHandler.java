@@ -14,8 +14,6 @@ public class SingleFileHandler {
 	
 	private ArrayList<Synop> synopObjectList;
 	
-	private int currentIndex;
-	
 	public SingleFileHandler(File file) {
 		this.file = file;
 
@@ -27,7 +25,6 @@ public class SingleFileHandler {
 		try {
 			dividedFileString = new DividedFileString(FileInputHandler.divideFileIntoStrings(file));
 		} catch (FileNotFoundException e) {
-			// TODO error dialog
 			e.printStackTrace();
 		}
 	}
@@ -35,14 +32,13 @@ public class SingleFileHandler {
 	private void createSynopObjectList() {
 		synopObjectList = new ArrayList<Synop>();
 		
-		while (currentIndex < dividedFileString.length()) {
-			synopObjectList.add(createSynopObject());
-			currentIndex++;
-		}
+		for (int i = 0; i < dividedFileString.length(); i++)
+			synopObjectList.add(createSynopObject(i));
 	}
 	
-	private Synop createSynopObject() {
-		getCurrentStringArray();
+	private Synop createSynopObject(int index) {
+		getCurrentStringArray(index);
+		trimStringArray();
 		
 		if (currentStringArray.get(0).equals(Constants.LAND_STATION_CODE))
 			return new SynopLand(currentStringArray);
@@ -52,11 +48,15 @@ public class SingleFileHandler {
 			return new SynopMobileLand(currentStringArray);
 	}
 	
-	private void getCurrentStringArray() {
-		currentStringArray = dividedFileString.getSingleStringArray(currentIndex);
+	private void getCurrentStringArray(int index) {
+		currentStringArray = dividedFileString.getSingleDividedString(index);
+	}
+	
+	private void trimStringArray() {
+		currentStringArray.remove("NIL");
 	}
 	
 	public ArrayList<Synop> getSynopObjectList() {
 		return synopObjectList;
-	}	
+	}
 }
