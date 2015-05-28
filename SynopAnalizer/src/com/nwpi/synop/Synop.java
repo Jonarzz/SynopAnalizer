@@ -8,6 +8,8 @@ public class Synop {
 	
 	protected ArrayList<String> stringArray;
 	
+	protected String stationType;
+	
 	protected int dayOfMonth;
 	protected int hourOfObservation;
 	protected int windIndicator;
@@ -15,7 +17,15 @@ public class Synop {
 	public Synop(ArrayList<String> stringArray) {		
 		this.stringArray = stringArray;
 		
+		getStationType();
 		getDayHourAndWindIndicator();
+	}
+	
+	protected void getStationType() {
+		if (stringArray.get(0).length() == 4)
+			stationType = stringArray.get(0);
+		else
+			stationType = "";
 	}
 	
 	protected void getDayHourAndWindIndicator() {

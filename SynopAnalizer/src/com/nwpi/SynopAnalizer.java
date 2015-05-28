@@ -39,8 +39,6 @@ public class SynopAnalizer extends Application {
             
             SynopAnalizerController controller = (SynopAnalizerController)loader.getController();
             controller.setStage(primaryStage);
-            controller.setInitialDefaultDirectory();
-            controller.setInitialButtonsClickability();
             
             primaryStage.setOnCloseRequest(e -> Platform.exit());
             

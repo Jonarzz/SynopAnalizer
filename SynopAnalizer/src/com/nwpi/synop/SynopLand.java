@@ -27,6 +27,9 @@ public class SynopLand extends Synop {
 	
 	public int getStationCode() {
 		return stationCode;
-	}
+	}	
 	
+	public String getStationCodeAsString() {
+		return Integer.toString(stationCode);
+	}
 }

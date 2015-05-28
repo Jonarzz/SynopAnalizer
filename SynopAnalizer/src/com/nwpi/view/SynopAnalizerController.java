@@ -31,6 +31,8 @@ import javafx.stage.StageStyle;
 
 public class SynopAnalizerController {
 	
+	private final int MAX_NUMBER_OF_THREADS = 50;
+	
 	@FXML
 	private Button analizeFileButton;
 	@FXML
@@ -46,6 +48,8 @@ public class SynopAnalizerController {
 	
 	private SingleFileHandler sfh;
 	
+	private SynopProcessor processor;
+	
 	private File defaultDirectory;
 	private File userChosenDirectory;
 	
@@ -59,18 +63,11 @@ public class SynopAnalizerController {
 		this.stage = stage;
 	}
 	
-	public void setInitialDefaultDirectory() {
-		defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
-	}
-	
-	public void setInitialButtonsClickability() {
-		analizeFileButton.setDisable(false);
-		analizeFoldersButton.setDisable(false);
-		cancelButton.setDisable(true);
-	}
-	
 	@FXML
-	private void initialize() {		
+	private void initialize() {			
+		setInitialDefaultDirectory();
+		setInitialButtonsClickability();
+		
 		analizeFileButton.setOnAction((event) -> {
 			openFile();
 		});
@@ -82,6 +79,16 @@ public class SynopAnalizerController {
 		cancelButton.setOnAction((event) -> {
 			cancel();
 		});
+	}
+	
+	private void setInitialDefaultDirectory() {
+		defaultDirectory = new File(System.getProperty("user.home") + "/Desktop");
+	}
+	
+	private void setInitialButtonsClickability() {
+		analizeFileButton.setDisable(false);
+		analizeFoldersButton.setDisable(false);
+		cancelButton.setDisable(true);
 	}
 	
 	private void openFile() {
@@ -205,7 +212,7 @@ public class SynopAnalizerController {
 					if (cancelled)
 						break;
 					
-					while (Thread.activeCount() > 50)
+					while (Thread.activeCount() > MAX_NUMBER_OF_THREADS)
 						try {
 							Thread.sleep(10);
 						} catch (InterruptedException e) {
@@ -253,7 +260,9 @@ public class SynopAnalizerController {
 		public void run() {
 			sfh = new SingleFileHandler(file);
 			ArrayList<Synop> synopList = sfh.getSynopObjectList();
-			SynopProcessor.analizeSynopList(synopList);
+
+			processor = new SynopProcessor();
+			processor.sendSynopListToDatabase(synopList);
 		}
 		
 	}
@@ -271,7 +280,8 @@ public class SynopAnalizerController {
 	private void showDirectorySummaryDialog() {		
 		Platform.runLater(new Runnable() {
 			public void run() {
-				String dialogText = "Processed " + Integer.toString(numberOfOpenedFiles) + " of " + Integer.toString(numberOfFilesToOpen) + " files.";
+				String dialogText = "Processed " + Integer.toString(numberOfOpenedFiles) + 
+						" of " + Integer.toString(numberOfFilesToOpen) + " files.";
 				
 				if (numberOfNotOpenedFiles > 0)
 					dialogText += " Couldn't process " + Integer.toString(numberOfNotOpenedFiles) + " files.";

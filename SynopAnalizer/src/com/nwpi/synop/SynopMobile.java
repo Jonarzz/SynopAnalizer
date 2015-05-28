@@ -48,19 +48,19 @@ public class SynopMobile extends Synop {
 	
 	protected void setQuadrantMultipliers(char q) {
 		switch (q) {
-			case 1:
+			case '1':
 				verticalQuadrantMultiplier = 1;
 				horizontalQuadrantMultiplier = 1;
 				break;
-			case 3:
+			case '3':
 				verticalQuadrantMultiplier = -1;
 				horizontalQuadrantMultiplier = 1;
 				break;
-			case 5:
+			case '5':
 				verticalQuadrantMultiplier = -1;
 				horizontalQuadrantMultiplier = -1;
 				break;
-			case 7:
+			case '7':
 				verticalQuadrantMultiplier = 1;
 				horizontalQuadrantMultiplier = -1;
 				break;
@@ -98,5 +98,21 @@ public class SynopMobile extends Synop {
 	
 	public int getHorizontalQuadrantMultiplier() {
 		return horizontalQuadrantMultiplier;
+	}
+	
+	public String getLatitudeAsString() {
+		return Float.toString(latitude);
+	}
+	
+	public String getLongitudeAsString() {
+		return Float.toString(longitude);
+	}
+	
+	public String getVertQMultiplierAsString() {
+		return Integer.toString(verticalQuadrantMultiplier);
+	}
+	
+	public String getHorQMultiplierAsString() {
+		return Integer.toString(horizontalQuadrantMultiplier);
 	}
 }
