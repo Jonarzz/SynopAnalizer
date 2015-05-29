@@ -99,6 +99,7 @@ public class SynopAnalizerController {
 		if (file == null)
 			return;
 
+		processor = new SynopProcessor();
 		createAndAnalizeSynop(file);
 		
 		showFileSummaryDialog();
@@ -208,6 +209,8 @@ public class SynopAnalizerController {
 				filesFromDirectory = new ArrayList<File>();
 				getFilesFromDirectory(new File(userChosenDirectory).listFiles());
 				
+				processor = new SynopProcessor();
+				
 				for (File file : filesFromDirectory) {
 					if (cancelled)
 						break;
@@ -219,7 +222,9 @@ public class SynopAnalizerController {
 							numberOfNotOpenedFiles++;
 						}
 					
+					
 					createAndAnalizeSynop(file);
+
 					numberOfOpenedFiles++;
 				}
 
@@ -260,8 +265,7 @@ public class SynopAnalizerController {
 		public void run() {
 			sfh = new SingleFileHandler(file);
 			ArrayList<Synop> synopList = sfh.getSynopObjectList();
-
-			processor = new SynopProcessor();
+			
 			processor.sendSynopListToDatabase(synopList);
 		}
 		

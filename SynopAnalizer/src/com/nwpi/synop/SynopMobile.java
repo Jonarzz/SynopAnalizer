@@ -23,6 +23,9 @@ public class SynopMobile extends Synop {
 		if (stringArray.size() < 4)
 			return;
 		
+		if (stringArray.get(3).length() != 5)
+			return;
+		
 		String latitudeString = stringArray.get(3).substring(2, 5);
 		int temp = 0;
 		
@@ -41,6 +44,9 @@ public class SynopMobile extends Synop {
 			return;
 		
 		String longitudeString = stringArray.get(4);
+		
+		if (longitudeString.length() != 5)
+			return;
 		
 		setQuadrantMultipliers(longitudeString.charAt(0));
 		setLongitude(longitudeString.substring(1, 5));
