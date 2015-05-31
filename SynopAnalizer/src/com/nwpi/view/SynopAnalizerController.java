@@ -1,15 +1,8 @@
 package com.nwpi.view;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Observable;
-import java.util.Observer;
 
 import com.nwpi.SingleFileHandler;
 import com.nwpi.SynopProcessor;
@@ -31,7 +24,7 @@ import javafx.stage.StageStyle;
 
 public class SynopAnalizerController {
 	
-	private final int MAX_NUMBER_OF_THREADS = 50;
+	private final int MAX_NUMBER_OF_THREADS = 10;
 	
 	@FXML
 	private Button analizeFileButton;
@@ -198,7 +191,7 @@ public class SynopAnalizerController {
 		th.setDaemon(true); 
 		th.start(); 	
 	}
-	
+	// TODO close sql connection properly
 	private void analizeDirectory(URI userChosenDirectory) {
 		Task<Void> task = new Task<Void>() {
 			protected Void call() throws Exception {	
@@ -222,12 +215,11 @@ public class SynopAnalizerController {
 							numberOfNotOpenedFiles++;
 						}
 					
-					
 					createAndAnalizeSynop(file);
 
 					numberOfOpenedFiles++;
 				}
-
+				
 				setInitialButtonsClickability();
 				
 				if (!cancelled)
@@ -268,7 +260,6 @@ public class SynopAnalizerController {
 			
 			processor.sendSynopListToDatabase(synopList);
 		}
-		
 	}
 	
 	private void showFileSummaryDialog() {

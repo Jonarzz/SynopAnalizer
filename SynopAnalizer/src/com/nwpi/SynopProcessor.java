@@ -8,11 +8,9 @@ import com.nwpi.synop.SynopLand;
 import com.nwpi.synop.SynopMobile;
 import com.nwpi.synop.SynopShip;
 
-public class SynopProcessor {
+public class SynopProcessor {	
 	
-	public static int station_id;
-	
-	public SQLQuerySender sqlqs;
+	private SQLQuerySender sqlqs;
 	
 	public SynopProcessor() {
 		sqlqs = new SQLQuerySender();
@@ -20,43 +18,48 @@ public class SynopProcessor {
 	
 	public void sendSynopListToDatabase(ArrayList<Synop> synopList) {		
 		for (Synop synop : synopList) 
-			analizeSynop(synop);
-		
+			if (synop instanceof SynopLand)
+				analizeSynop((SynopLand)synop);
+			else
+				analizeSynop((SynopMobile)synop);
+	}
+	
+	public void closeSQLConnection() {
 		sqlqs.closeConnection();
 	}
 
-	private void analizeSynop(Synop synop) {
-		//sqlqs.addStatement(dayHourAndWindIndicatorQuery(synop));
+	private void analizeSynop(SynopLand synop) {
+		int stationID;
 		
-		if (synop instanceof SynopLand)
-			sqlqs.addStatement(stationQuery((SynopLand) synop));
-		else
-			sqlqs.addStatement(stationQuery((SynopMobile) synop));
+		sqlqs.addStatement(stationQuery((SynopLand) synop));
+		
+		if ((stationID = getStationIDFromDatabase(synop)) != -1)
+			sqlqs.addStatement(dayHourAndWindIndicatorQuery(synop, stationID));
 	}
-	// TODO 
-	private String dayHourAndWindIndicatorQuery(Synop synop) {
-		return "";
+	
+	private void analizeSynop(SynopMobile synop) {
+		int stationID;
+		
+		sqlqs.addStatement(stationQuery((SynopMobile) synop));
+		
+		if ((stationID = getStationIDFromDatabase(synop)) != -1)
+			sqlqs.addStatement(dayHourAndWindIndicatorQuery(synop, stationID));
 	}
 	
 	private String stationQuery(SynopLand synop) {
-		String command = "INSERT INTO stations (code, type, station_id) VALUES (" + synop.getStationCode() + ", \'AAXX\', ";
+		if (getStationIDFromDatabase(synop) != -1)
+			return null;		
 		
-		if (sqlqs.getStationID(synop.getStationCodeAsString()) != -1)
-			return "";		
-		else
-			command += Integer.toString(++station_id) + ");";
-			
+		String command = "INSERT INTO stations (code, type) VALUES (" + synop.getStationCode() + ", \'AAXX\');";
+		
 		return command;
 	}
 	
 	private String stationQuery(SynopMobile synop) {
-		String command = "INSERT INTO stations (station_id, type, latitude, longitude, v_quadr, h_quadr) VALUES ("; 
+		if (getStationIDFromDatabase(synop) != -1)
+			return null;
 		
-		if (sqlqs.getStationID(synop.getLatitude(), synop.getLongitude(), 
-				synop.getVerticalQuadrantMultiplier(), synop.getHorizontalQuadrantMultiplier()) != -1)
-			return "";
-		else
-			command += Integer.toString(++station_id) + ", "; 
+		String command = "INSERT INTO stations (type, latitude, longitude, v_quadr, h_quadr) VALUES ("; 
 		
 		if (synop instanceof SynopShip)
 			command += "\'BBXX\', ";
@@ -67,5 +70,32 @@ public class SynopProcessor {
 				+ synop.getVertQMultiplierAsString() + ", " + synop.getHorQMultiplierAsString() + ");";
 		
 		return command;
-	}	
+	}
+	
+	private String dayHourAndWindIndicatorQuery(Synop synop, int stationID) {	
+		String command = "INSERT INTO date (day, hour, station_id) VALUES (" + synop.getDayAsString() + ", " +
+				synop.getHourAsString() + ", " + Integer.toString(stationID) + "); ";
+		
+		command += "INSERT INTO weather (wind_unit, station_id) VALUES (";
+		
+		if (synop.getWindIndicator() == Constants.WS_ANEMOMETER_IN_MPS || 
+				synop.getWindIndicator() == Constants.WS_WILDTYPE_IN_MPS)
+			command += "\'mps\', " + Integer.toString(stationID) + ");";
+		else if (synop.getWindIndicator() == Constants.WS_ANEMOMETER_IN_KNOT || 
+				synop.getWindIndicator() == Constants.WS_WILDTYPE_IN_KNOT)
+			command += "\'knot\', " + Integer.toString(stationID) + ");";
+		else
+			command += "NULL, " + Integer.toString(stationID) + ");";
+		
+		return command;
+	}
+	
+	private int getStationIDFromDatabase(SynopLand synop) {
+		return sqlqs.getStationID(synop.getStationCodeAsString());
+	}
+	
+	private int getStationIDFromDatabase(SynopMobile synop) {
+		return sqlqs.getStationID(synop.getLatitude(), synop.getLongitude(), 
+				synop.getVerticalQuadrantMultiplier(), synop.getHorizontalQuadrantMultiplier());
+	}
 }

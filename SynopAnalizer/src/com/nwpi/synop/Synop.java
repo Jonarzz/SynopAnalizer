@@ -79,4 +79,16 @@ public class Synop {
 	public int getWindIndicator() {
 		return windIndicator;
 	}
+	
+	public String getDayAsString() {
+		return Integer.toString(dayOfMonth);
+	}
+	
+	public String getHourAsString() {
+		return Integer.toString(hourOfObservation);
+	}
+	
+	public String getWindIndicatorAsString() {
+		return Integer.toString(windIndicator);
+	}
 }

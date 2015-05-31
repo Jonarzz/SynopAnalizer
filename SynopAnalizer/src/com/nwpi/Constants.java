@@ -24,10 +24,10 @@ public class Constants {
 	//
 	// WS - WIND SPEED
 	//
-	public static final char WS_WILDTYPE_IN_MPS = '0';
-	public static final char WS_ANEMOMETER_IN_MPS = '1';
-	public static final char WS_WILDTYPE_IN_KNOT = '3';
-	public static final char WS_ANEMOMETER_IN_KNOT = '4';
+	public static final int WS_WILDTYPE_IN_MPS = 0;
+	public static final int WS_ANEMOMETER_IN_MPS = 1;
+	public static final int WS_WILDTYPE_IN_KNOT = 3;
+	public static final int WS_ANEMOMETER_IN_KNOT = 4;
 	//
 	////// END YEAR-HOUR-WIND GROUP [YYHHW]
 	

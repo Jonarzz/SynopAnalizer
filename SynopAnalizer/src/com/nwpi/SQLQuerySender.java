@@ -8,33 +8,33 @@ import java.sql.Statement;
 
 public class SQLQuerySender {
 	
+	private final String SQL_URL = "jdbc:postgresql://localhost:5432/SynopBase";
+	private final String SQL_USERNAME = "postgres";
+	private final String SQL_PASSWORD = "vonsledz";
+	
 	private Connection connection;
 	private Statement statement;
 
 	public SQLQuerySender() {
 		createConnection();
-		createStatement();
 	}
 	
 	private void createConnection() {
 		try {
 			Class.forName("org.postgresql.Driver");
-			connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/SynopBase","postgres", "vonsledz");
+			connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
 			connection.setAutoCommit(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private void createStatement() {
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public void addStatement(String command) {
+		if (command == null)
+			return;
+		
+		createStatement();
+		
 		try {
 			statement.executeUpdate(command);
 		} catch (SQLException e) {
@@ -48,10 +48,12 @@ public class SQLQuerySender {
 		
 		int stationID = -1;
 		
+		createStatement();
+		
 		try {
 			ResultSet rs = statement.executeQuery(command);
 			try {
-				while (rs.next())
+				if (rs.next())
 					stationID = Integer.parseInt(rs.getString(1));
 			} catch (NumberFormatException e) {
 				stationID = -1;
@@ -70,10 +72,12 @@ public class SQLQuerySender {
 		
 		int stationID = -1;
 		
+		createStatement();
+		
 		try {
 			ResultSet rs = statement.executeQuery(command);
 			try {
-				while (rs.next())
+				if (rs.next())
 					stationID = Integer.parseInt(rs.getString(1));
 			} catch (NumberFormatException e) {
 				stationID = -1;
@@ -83,6 +87,14 @@ public class SQLQuerySender {
 		}
 		
 		return stationID;
+	}
+	
+	private void createStatement() {
+		try {
+			statement = connection.createStatement();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 		
 	public void closeConnection() {
