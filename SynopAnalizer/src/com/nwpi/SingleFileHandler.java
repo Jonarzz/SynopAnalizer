@@ -14,19 +14,15 @@ public class SingleFileHandler {
 	
 	private ArrayList<Synop> synopObjectList;
 	
-	public SingleFileHandler(File file) {
+	public SingleFileHandler(File file) throws FileNotFoundException {
 		this.file = file;
 
 		createDividedFileString();
 		createSynopObjectList();
 	}
-		
-	private void createDividedFileString() {
-		try {
-			dividedFileString = new DividedFileString(FileInputHandler.divideFileIntoStrings(file));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+	
+	private void createDividedFileString() throws FileNotFoundException {
+		dividedFileString = new DividedFileString(FileInputHandler.divideFileIntoStrings(file));
 	}
 	
 	private void createSynopObjectList() {

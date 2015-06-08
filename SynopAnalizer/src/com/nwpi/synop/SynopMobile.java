@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.nwpi.Constants;
 
-public class SynopMobile extends Synop {
+public abstract class SynopMobile extends Synop {
 	
 	private float latitude;
 	private float longitude;
@@ -12,12 +12,16 @@ public class SynopMobile extends Synop {
 	private int verticalQuadrantMultiplier;
 	private int horizontalQuadrantMultiplier;
 	
+	protected float temperature;
+	
 	public SynopMobile(ArrayList<String> stringArray) {
 		super(stringArray);
 		
 		setLatitude();
 		setLongitudeAndQuadrant();
 	}
+	
+	protected abstract void setTemperature();
 	
 	protected void setLatitude() {
 		if (stringArray.size() < 4)
@@ -90,6 +94,10 @@ public class SynopMobile extends Synop {
 		longitude = (float)temp / 10;
 	}
 	
+	public float getTemperature() {
+		return temperature;
+	}
+	
 	public float getLatitude() {
 		return latitude;
 	}
@@ -106,6 +114,13 @@ public class SynopMobile extends Synop {
 		return horizontalQuadrantMultiplier;
 	}
 	
+	public String getTemperatureAsString() {
+		if (temperature == Constants.INITIAL_VALUE)
+			return Integer.toString((int)temperature);
+		
+		return Float.toString(temperature);
+	}
+	
 	public String getLatitudeAsString() {
 		return Float.toString(latitude);
 	}
@@ -120,5 +135,5 @@ public class SynopMobile extends Synop {
 	
 	public String getHorQMultiplierAsString() {
 		return Integer.toString(horizontalQuadrantMultiplier);
-	}
+	}	
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.nwpi.Constants;
 
-public class Synop {
+public abstract class Synop {
 	
 	protected ArrayList<String> stringArray;
 	
@@ -14,21 +14,24 @@ public class Synop {
 	protected int hourOfObservation;
 	protected int windIndicator;
 	
+	protected float temperature;
+	
 	public Synop(ArrayList<String> stringArray) {		
 		this.stringArray = stringArray;
-		
-		getStationType();
-		getDayHourAndWindIndicator();
+
+		setStationType();
+		setDayHourAndWindIndicator();
+		setTemperature();
 	}
 	
-	protected void getStationType() {
+	protected void setStationType() {
 		if (stringArray.get(0).length() == 4)
 			stationType = stringArray.get(0);
 		else
 			stationType = "";
 	}
 	
-	protected void getDayHourAndWindIndicator() {
+	protected void setDayHourAndWindIndicator() {
 		String dayHourAndWindIndicator = "";
 		
 		if (this instanceof SynopLand && stringArray.size() > 1)
@@ -43,6 +46,8 @@ public class Synop {
 		setHourOfObservation(dayHourAndWindIndicator);
 		setWindIndicator(dayHourAndWindIndicator);
 	}
+	
+	protected abstract void setTemperature();
 
 	private void setDayOfMonth(String str) {
 		try {
@@ -68,6 +73,8 @@ public class Synop {
 		}
 	}
 	
+	public abstract float getTemperature();
+	
 	public int getDayOfMonth() {
 		return dayOfMonth;
 	}
@@ -80,6 +87,8 @@ public class Synop {
 		return windIndicator;
 	}
 	
+	public abstract String getTemperatureAsString();
+
 	public String getDayAsString() {
 		return Integer.toString(dayOfMonth);
 	}

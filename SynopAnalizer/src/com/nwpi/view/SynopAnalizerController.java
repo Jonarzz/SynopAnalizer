@@ -1,8 +1,10 @@
 package com.nwpi.view;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.nwpi.SingleFileHandler;
 import com.nwpi.SynopProcessor;
@@ -24,8 +26,6 @@ import javafx.stage.StageStyle;
 
 public class SynopAnalizerController {
 	
-	private final int MAX_NUMBER_OF_THREADS = 10;
-	
 	@FXML
 	private Button analizeFileButton;
 	@FXML
@@ -39,16 +39,18 @@ public class SynopAnalizerController {
 	
 	private Stage stage;
 	
-	private SingleFileHandler sfh;
-	
 	private SynopProcessor processor;
 	
 	private File defaultDirectory;
 	private File userChosenDirectory;
 	
 	private ArrayList<File> filesFromDirectory;
+	private volatile ArrayList<ArrayList<Synop>> allSynopsToAnalize;
 	
-	private int numberOfFilesToOpen, numberOfOpenedFiles, numberOfNotOpenedFiles;
+	private Task<Void> filesTask;
+	private Task<Void> dbTask;
+	
+	private int numberOfSynopListsToProcess, numberOfProcessedSynopLists, filesNotFound;
 	
 	private boolean cancelled;
 	
@@ -92,10 +94,14 @@ public class SynopAnalizerController {
 		if (file == null)
 			return;
 
-		processor = new SynopProcessor();
-		createAndAnalizeSynop(file);
+		numberOfSynopListsToProcess = 1;
+		numberOfProcessedSynopLists = 0;
+		filesNotFound = 0;
+		startProgressBarThread();
 		
-		showFileSummaryDialog();
+		initializeFilesTaskForSingleFile(file);
+		Thread fileThread = new Thread(filesTask);
+		fileThread.start();
 	}
 	
 	private File getUserChosenFile() {
@@ -144,36 +150,36 @@ public class SynopAnalizerController {
 		else
 			defaultDirectory = userChosenDirectory.getParentFile();				
 	}
-	
-	private void initializeNumbersForProgressBar() {
-		numberOfOpenedFiles = 0;
-		numberOfNotOpenedFiles = 0;
-		numberOfFilesToOpen = 0;
-	}
 
 	private void initializeNumbersForProgressBar(URI userChosenDirectory) {
-		initializeNumbersForProgressBar();
+		initializeNumbersForProcessing();
 		
 		File[] files = new File(userChosenDirectory).listFiles();
 		for (File f : files)
 			if (f.isDirectory())
-				numberOfFilesToOpen += f.listFiles().length;
+				numberOfSynopListsToProcess += f.listFiles().length;
 			else
-				numberOfFilesToOpen++;
+				numberOfSynopListsToProcess++;
 	}
 
+	private void initializeNumbersForProcessing() {
+		filesNotFound = 0;
+		numberOfProcessedSynopLists = 0;
+		numberOfSynopListsToProcess = 0;
+	}
+	
 	private void startProgressBarThread() {
 		Task<Void> task = new Task<Void>() {
 			protected Void call() throws Exception {	
 				updateProgress(0, 1);	
-				updateMessage("0/" + Integer.toString(numberOfFilesToOpen));
+				updateMessage("0/" + Integer.toString(numberOfSynopListsToProcess));
 				
-				while (numberOfOpenedFiles <= numberOfFilesToOpen) {
+				while (numberOfProcessedSynopLists <= numberOfSynopListsToProcess) {
 					if (cancelled)
 						break;
 					
-					updateProgress(numberOfOpenedFiles, numberOfFilesToOpen);	
-					updateMessage(Integer.toString(numberOfOpenedFiles) + "/" + Integer.toString(numberOfFilesToOpen));
+					updateProgress(numberOfProcessedSynopLists, numberOfSynopListsToProcess);	
+					updateMessage(Integer.toString(numberOfProcessedSynopLists) + "/" + Integer.toString(numberOfSynopListsToProcess));
 				}
 				
 				updateProgress(0, 1);	
@@ -191,47 +197,101 @@ public class SynopAnalizerController {
 		th.setDaemon(true); 
 		th.start(); 	
 	}
-	// TODO close sql connection properly
+	
 	private void analizeDirectory(URI userChosenDirectory) {
-		Task<Void> task = new Task<Void>() {
-			protected Void call() throws Exception {	
-				analizeFileButton.setDisable(true);
-				analizeFoldersButton.setDisable(true);
-				cancelButton.setDisable(false);
+		initializeFilesTaskForDirectory(userChosenDirectory);
+		initializeDBTask();
+		
+		Thread filesThread = new Thread(filesTask); 
+		Thread dbThread = new Thread(dbTask);
+		filesThread.setDaemon(true); 
+		dbThread.setDaemon(true);
+		
+		filesThread.start();
+		
+		try {
+			filesThread.join();
+			dbThread.start();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void initializeFilesTaskForSingleFile(File file) {
+		filesTask = new Task<Void>() {
+			protected Void call() {				
+				setBlockedButtonsClickability();
+
+				try {
+					processFile(file);
+					numberOfProcessedSynopLists++;
+
+					if (!cancelled)
+						showFileSummaryDialog();
+				} catch (FileNotFoundException e) {
+					filesNotFound++;
+				}
+				
+				if (filesNotFound != 0)
+					showFilesNotFoundDialog();
+				
+				setInitialButtonsClickability();
+				
+				return null;
+			}
+		};
+	}
+	
+	private void initializeFilesTaskForDirectory(URI userChosenDirectory) {
+		filesTask = new Task<Void>() {
+			protected Void call() {	
+				setBlockedButtonsClickability();
 				
 				filesFromDirectory = new ArrayList<File>();
 				getFilesFromDirectory(new File(userChosenDirectory).listFiles());
 				
 				processor = new SynopProcessor();
+				allSynopsToAnalize = new ArrayList<ArrayList<Synop>>();
 				
 				for (File file : filesFromDirectory) {
 					if (cancelled)
 						break;
-					
-					while (Thread.activeCount() > MAX_NUMBER_OF_THREADS)
-						try {
-							Thread.sleep(10);
-						} catch (InterruptedException e) {
-							numberOfNotOpenedFiles++;
-						}
-					
-					createAndAnalizeSynop(file);
-
-					numberOfOpenedFiles++;
+					try {
+					initializeAllSynops(file);
+					} catch (FileNotFoundException e) {
+						filesNotFound++;
+					}
 				}
 				
-				setInitialButtonsClickability();
+				if (filesNotFound != 0)
+					showFilesNotFoundDialog();
 				
-				if (!cancelled)
-					showDirectorySummaryDialog();
-								
 		        return null;
 			}
 		};
+	}
+	
+	private void processFile(File file) throws FileNotFoundException {
+		processor = new SynopProcessor();
+		allSynopsToAnalize = new ArrayList<ArrayList<Synop>>();
+
+		initializeAllSynops(file);
 		
-		Thread th = new Thread(task); 
-		th.setDaemon(true); 
-		th.start();
+		for (ArrayList<Synop> synopList : allSynopsToAnalize)
+			processor.sendSynopListToDatabase(synopList);
+		
+		processor.closeSQLConnection();
+	}
+
+	private void initializeAllSynops(File file) throws FileNotFoundException {
+		SingleFileHandler sfh = new SingleFileHandler(file);
+		allSynopsToAnalize.add(sfh.getSynopObjectList());
+	}
+	
+	private void setBlockedButtonsClickability() {
+		analizeFileButton.setDisable(true);
+		analizeFoldersButton.setDisable(true);
+		cancelButton.setDisable(false);
 	}
 	
 	private void getFilesFromDirectory(File[] directory) {
@@ -241,45 +301,42 @@ public class SynopAnalizerController {
 			else
 				filesFromDirectory.add(file);
 	}
-	
-	private void createAndAnalizeSynop(File file) {
-		new Thread(new SynopObjectListCreator(file)).start();
-	}
-	
-	private class SynopObjectListCreator implements Runnable {
 		
-		private File file;
-		
-		public SynopObjectListCreator(File file) {
-			this.file = file;
-		}
-
-		public void run() {
-			sfh = new SingleFileHandler(file);
-			ArrayList<Synop> synopList = sfh.getSynopObjectList();
-			
-			processor.sendSynopListToDatabase(synopList);
-		}
+	private void initializeDBTask() {
+		dbTask = new Task<Void>() {
+			protected Void call() throws Exception {				
+				for (ArrayList<Synop> synopList : allSynopsToAnalize) {
+					processor.sendSynopListToDatabase(synopList);
+					numberOfProcessedSynopLists++;
+				}
+				
+				processor.closeSQLConnection();
+				
+				setInitialButtonsClickability();
+							
+				if (!cancelled)
+					showDirectorySummaryDialog();
+				
+				return null;
+			}
+		};
 	}
 	
 	private void showFileSummaryDialog() {
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.initStyle(StageStyle.UTILITY);
-		alert.setTitle("File analized");
-		alert.setHeaderText(null);
-		alert.setContentText("Processed the file.");
-
-		alert.showAndWait();
+		Platform.runLater(() -> {
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.initStyle(StageStyle.UTILITY);
+				alert.setTitle("File analized");
+				alert.setHeaderText(null);
+				alert.setContentText("Processed the file.");
+		
+				alert.showAndWait();
+		});
 	}
 
 	private void showDirectorySummaryDialog() {		
-		Platform.runLater(new Runnable() {
-			public void run() {
-				String dialogText = "Processed " + Integer.toString(numberOfOpenedFiles) + 
-						" of " + Integer.toString(numberOfFilesToOpen) + " files.";
-				
-				if (numberOfNotOpenedFiles > 0)
-					dialogText += " Couldn't process " + Integer.toString(numberOfNotOpenedFiles) + " files.";
+		Platform.runLater(() -> {
+				String dialogText = "Processed " + numberOfProcessedSynopLists + " of " + numberOfSynopListsToProcess + " files.";
 				
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.initStyle(StageStyle.UTILITY);
@@ -289,14 +346,28 @@ public class SynopAnalizerController {
 				alert.setContentText(dialogText);
 				
 				alert.showAndWait();
-			}
+		});
+	}
+	
+	private void showFilesNotFoundDialog() {
+		Platform.runLater(() -> {
+				String dialogText = filesNotFound + " files not found.";
+				
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.initStyle(StageStyle.UTILITY);
+				alert.setTitle("Files not found");
+				alert.setHeaderText(null);
+				
+				alert.setContentText(dialogText);
+				
+				alert.showAndWait();
 		});
 	}
 	
 	private void cancel() {
 		cancelled = true;
 		unbindProgress();
-		initializeNumbersForProgressBar();
+		initializeNumbersForProcessing();
 		clearProgress();
 		setInitialButtonsClickability();
 	}

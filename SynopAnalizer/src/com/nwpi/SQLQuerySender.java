@@ -43,8 +43,8 @@ public class SQLQuerySender {
 		}
 	}
 	
-	public int getStationID(String code) {
-		String command = "SELECT station_id FROM stations WHERE code = \'" + code + "\';";
+	public int getStationID(int stationCode) {
+		String command = "SELECT station_id FROM stations WHERE code = \'" + stationCode + "\';";
 		
 		int stationID = -1;
 		
@@ -52,38 +52,21 @@ public class SQLQuerySender {
 		
 		try {
 			ResultSet rs = statement.executeQuery(command);
-			try {
-				if (rs.next())
-					stationID = Integer.parseInt(rs.getString(1));
-			} catch (NumberFormatException e) {
-				stationID = -1;
-			}
+			while (rs.next())
+				stationID = Integer.parseInt(rs.getString(1));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
-		return stationID;
-	}
-	
-	public int getStationID(float latitude, float longitude, int vQ, int hQ) {
-		String command = "SELECT station_id FROM stations WHERE latitude = " + Float.toString(latitude) + 
-				" AND longitude = " + Float.toString(longitude) + " AND v_quadr = " + Integer.toString(vQ) + 
-				" AND h_quadr = " + Integer.toString(hQ) + ";";
-		
-		int stationID = -1;
-		
-		createStatement();
-		
-		try {
-			ResultSet rs = statement.executeQuery(command);
+		if (stationID == -1) {
+			command = "SELECT CURRVAL(\'stations_station_id_seq\'::regclass) FROM stations;";
 			try {
+				ResultSet rs = statement.executeQuery(command);
 				if (rs.next())
-					stationID = Integer.parseInt(rs.getString(1));
-			} catch (NumberFormatException e) {
-				stationID = -1;
+					stationID = -1 * (Integer.parseInt(rs.getString(1)) + 1);
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 		
 		return stationID;
@@ -96,7 +79,7 @@ public class SQLQuerySender {
 			e.printStackTrace();
 		}
 	}
-		
+	
 	public void closeConnection() {
 		try {
 			connection.close();
