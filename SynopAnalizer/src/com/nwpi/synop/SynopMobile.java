@@ -12,22 +12,51 @@ public abstract class SynopMobile extends Synop {
 	private int verticalQuadrantMultiplier;
 	private int horizontalQuadrantMultiplier;
 	
-	protected float temperature;
-	
-	public SynopMobile(ArrayList<String> stringArray) {
-		super(stringArray);
+	public SynopMobile(ArrayList<String> stringArray, String fileName) {
+		super(stringArray, fileName);
 		
 		setLatitude();
 		setLongitudeAndQuadrant();
 	}
 	
-	protected abstract void setTemperature();
-	
-	protected void setLatitude() {
-		if (stringArray.size() < 4)
+	protected void setStationCode() {
+		if (stringArray.size() < 2 || !stringIsValid(stringArray.get(1)))
 			return;
 		
-		if (stringArray.get(3).length() != 5)
+		stationCode = stringArray.get(1);
+	}
+	
+	protected void setHorizontalVisibilityInt() {
+		if (stringArray.size() < 6 || !stringIsValid(stringArray.get(5))) {
+			horizontalVisibilityInt = Constants.INITIAL_VALUE;
+			return;
+		}
+		
+		try {
+			horizontalVisibilityInt = Integer.parseInt(stringArray.get(5).substring(3, 5));
+		} catch (NumberFormatException e) {
+			horizontalVisibilityInt = Constants.INITIAL_VALUE;
+		}
+	}
+	
+	protected void setTemperatureString() {	
+		if (stringArray.size() < 8 || !stringIsValid(stringArray.get(7)))
+			return;
+
+		temperatureString = stringArray.get(7).substring(2, 5);
+	}
+	
+	protected void setWindString() {
+		if (stringArray.size() < 7 || !stringIsValid(stringArray.get(6)))
+			return;
+		
+		windString = stringArray.get(6);
+	}
+	
+	protected abstract void setPressureString();
+	
+	protected void setLatitude() {
+		if (stringArray.size() < 4 || !stringIsValid(stringArray.get(3)))
 			return;
 		
 		String latitudeString = stringArray.get(3).substring(2, 5);
@@ -44,7 +73,7 @@ public abstract class SynopMobile extends Synop {
 	}
 	
 	protected void setLongitudeAndQuadrant() {
-		if (stringArray.size() < 5)
+		if (stringArray.size() < 5 || !stringIsValid(stringArray.get(4)))
 			return;
 		
 		String longitudeString = stringArray.get(4);
@@ -93,11 +122,7 @@ public abstract class SynopMobile extends Synop {
 		
 		longitude = (float)temp / 10;
 	}
-	
-	public float getTemperature() {
-		return temperature;
-	}
-	
+
 	public float getLatitude() {
 		return latitude;
 	}
@@ -113,27 +138,4 @@ public abstract class SynopMobile extends Synop {
 	public int getHorizontalQuadrantMultiplier() {
 		return horizontalQuadrantMultiplier;
 	}
-	
-	public String getTemperatureAsString() {
-		if (temperature == Constants.INITIAL_VALUE)
-			return Integer.toString((int)temperature);
-		
-		return Float.toString(temperature);
-	}
-	
-	public String getLatitudeAsString() {
-		return Float.toString(latitude);
-	}
-	
-	public String getLongitudeAsString() {
-		return Float.toString(longitude);
-	}
-	
-	public String getVertQMultiplierAsString() {
-		return Integer.toString(verticalQuadrantMultiplier);
-	}
-	
-	public String getHorQMultiplierAsString() {
-		return Integer.toString(horizontalQuadrantMultiplier);
-	}	
 }

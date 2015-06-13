@@ -3,17 +3,13 @@ package com.nwpi;
 public class Constants {
 	
 	public static final int INITIAL_VALUE = -1000;
-	public static final int INITIAL_STATION_CODE = 0;
-
-	public static final char UNKNOWN_CHAR = '/';
-	public static final String UNKNOWN_STRING = "//";
+	public static final String UNKNOWN_VALUE = "/";
 
 	public static final String CHAPTER_3_CODE = "333";
 	public static final String CHAPTER_4_CODE = "444";
 	public static final String CHAPTER_5_CODE = "555";
 
 	public static final char PLUS_SIGN_TEMPERATURE = '0';
-	public static final char MINUS_SIGN_TEMPERATURE = '1';
 	
 	public static final String LAND_STATION_CODE = "AAXX";
 	public static final String SHIP_STATION_CODE = "BBXX";
@@ -89,11 +85,19 @@ public class Constants {
 	98 – 20,0 – 50,0 km
 	99 - > 50 km
 	*/
-	//
-	public static final String HV_LOWER_LIMIT_DECIMAL_LEAP = "00";
-	public static final String HV_UPPER_LIMIT_DECIMAL_LEAP = "50";
-	public static final String HV_LOWER_LIMIT_UNIT_LEAP = "56";
-	public static final String HV_UPPER_LIMIT_UNIT_LEAP = "89";
+	// HP - high precision
+	public static final int HV_LESS_THAN_1_LIMIT = 10;
+	public static final int HV_LESS_THAN_10_LIMIT = 60;
+	public static final int HV_LESS_THAN_50_LIMIT = 84;
+	public static final int HV_HP_LIMIT = 90;
+	public static final int HV_LESS_THAN_1_HP_LIMIT = 93;
+	public static final int HV_LESS_THAN_10_HP_LIMIT = 96;
+	public static final int HV_LESS_THAN_50_HP_LIMIT = 98;
+	
+	public static final String HV_LESS_THAN_1_STRING = "<1";
+	public static final String HV_LESS_THAN_10_STRING = "1-10";
+	public static final String HV_LESS_THAN_50_STRING = "10-50";
+	public static final String HV_MORE_THAN_50_STRING = ">50";
 	//
 	////// END DOWNFALL-STATION-CLOUD-VISABILITY [xyzXX]
 	
@@ -105,7 +109,9 @@ public class Constants {
 	// VALUES FROM '0' TO '9'
 	// '/' ACCEPTABLE
 	//
-	public static final char CLOUDINESS_SKY_UNSEEN = '9';
+	public static final String CLEAR_SKY = "NO CLOUDS";
+	public static final String CLOUDY = "CLOUDY";
+	public static final String SKY_NOT_VISIBLE = "SKY NOT VISIBLE";
 	//
 	// WD - WIND DIRECTION
 	// WD = FROM { 5 + (yy - 1) * 9 } TO { 5 + yy * 9 } OR:

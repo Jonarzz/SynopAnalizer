@@ -6,78 +6,92 @@ import com.nwpi.Constants;
 
 public class SynopLand extends Synop {
 	
-	private int stationCode;
-
-	public SynopLand(ArrayList<String> stringArray) {
-		super(stringArray);
+	private int rainfall;
+	private String rainfallString;
+	
+	public SynopLand(ArrayList<String> stringArray, String fileName) {
+		super(stringArray, fileName);
 		
-		setStationCode();
+		setRainfall();
 	}
 	
-	private void setStationCode() {
-		if (stringArray.size() < 3)
+	protected void setStationCode() {
+		if (stringArray.size() < 3 || stringArray.get(2).length() > 10)
 			return;
+		
+		stationCode = stringArray.get(2);
+	}
+	
+	protected void setHorizontalVisibilityInt() {
+		if (stringArray.size() < 4 || !stringIsValid(stringArray.get(3))) {
+			horizontalVisibilityInt = Constants.INITIAL_VALUE;
+			return;
+		}
 		
 		try {
-			stationCode = Integer.parseInt(stringArray.get(2));
+			horizontalVisibilityInt = Integer.parseInt(stringArray.get(3).substring(3, 5));
 		} catch (NumberFormatException e) {
-			stationCode = Constants.INITIAL_STATION_CODE;
+			horizontalVisibilityInt = Constants.INITIAL_VALUE;
 		}
 	}
 	
-	protected void setTemperature() {
-		String tempString;
-		float temp = 0;
-		
-		if (stringArray.size() < 6 || stringArray.get(5).length() != 5) {
-			temperature = Constants.INITIAL_VALUE;
+	protected void setTemperatureString() {
+		if (stringArray.size() < 6 || !stringIsValid(stringArray.get(5)))
 			return;
-		}
 		
 		if (stringArray.get(5).charAt(0) == '0') {
-			if (stringArray.size() < 7 || stringArray.get(6).length() != 5) {
-				temperature = Constants.INITIAL_VALUE;
+			if (stringArray.size() < 7 || !stringIsValid(stringArray.get(5)))
 				return;
-			}
 			
-			tempString = stringArray.get(6).substring(2, 5);
-			if (stringArray.get(6).charAt(1) == '0')
-				temperature = 1;
-			else
-				temperature = -1;
+			temperatureString = stringArray.get(6).substring(2, 5);
 		}
-		else {
-			tempString = stringArray.get(5).substring(2, 5);
-			if (stringArray.get(5).charAt(1) == '0')
-				temperature = 1;
-			else
-				temperature = -1;
+		else if (stringIsValid(stringArray.get(5)))
+			temperatureString = stringArray.get(5).substring(2, 5);
+	}
+	
+	protected void setWindString() {
+		if (stringArray.size() < 5 || !stringIsValid(stringArray.get(4)))
+			return;
+		
+		windString = stringArray.get(4);
+	}
+	
+	protected void setPressureString() {
+		if (stringArray.size() < 8 || stringArray.get(7).charAt(0) != '3' || !stringIsValid(stringArray.get(7)))
+				return;
+		
+		pressureString = stringArray.get(7);
+	}
+	
+	private void setRainfall() {
+		setRainfallString();
+		
+		if (rainfallString == null) {
+			rainfall = Constants.INITIAL_VALUE;
+			return;
 		}
 		
 		try {
-			temp = Float.parseFloat(tempString) / 10;
-			temperature *= temp;
+			rainfall = Integer.parseInt(rainfallString.substring(1, 4));
+			if (rainfall >= 990)
+				rainfall = 0;
 		} catch (NumberFormatException e) {
-			temperature = Constants.INITIAL_VALUE;
+			rainfall = Constants.INITIAL_VALUE;
 		}
 	}
 	
-	public int getStationCode() {
+	protected void setRainfallString() {
+		if (stringArray.size() < 11 || stringArray.get(10).charAt(0) != '6' || !stringIsValid(stringArray.get(10)))
+			return;
+		
+		rainfallString = stringArray.get(10);
+	}
+	
+	public String getStationCode() {
 		return stationCode;
 	}	
 	
-	public float getTemperature() {
-		return temperature;
-	}
-	
-	public String getStationCodeAsString() {
-		return Integer.toString(stationCode);
-	}
-	
-	public String getTemperatureAsString() {
-		if (temperature == Constants.INITIAL_VALUE)
-			return Integer.toString((int)temperature);
-		
-		return Float.toString(temperature);
+	public int getRainfall() {
+		return rainfall;
 	}
 }

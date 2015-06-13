@@ -1,29 +1,27 @@
 package com.nwpi;
 
-
-import java.util.ArrayList;
-
 import com.nwpi.synop.Synop;
 import com.nwpi.synop.SynopLand;
 import com.nwpi.synop.SynopMobile;
-import com.nwpi.synop.SynopShip;
-
+//TODO add commands sending Synop data to database
 public class SynopProcessor {	
 	
 	private SQLQuerySender sqlqs;
 	
 	private int stationID;
 
-	public SynopProcessor() {
-		sqlqs = new SQLQuerySender();
+	public SynopProcessor(SQLQuerySender sqlqs) {
+		this.sqlqs = sqlqs;
 	}
 	
-	public void sendSynopListToDatabase(ArrayList<Synop> synopList) {		
-		for (Synop synop : synopList) 
-			if (synop instanceof SynopLand)
-				analizeSynop((SynopLand)synop);
-			else
-				analizeSynop((SynopMobile)synop);
+	public void sendSynopListToDatabase(Synop synop) {	
+		if (sqlqs.isDisconnected())
+			return;
+		
+		if (synop instanceof SynopLand)
+			analizeSynop((SynopLand)synop);
+		else
+			analizeSynop((SynopMobile)synop);
 	}
 	
 	public void closeSQLConnection() {
@@ -44,16 +42,23 @@ public class SynopProcessor {
 //		sqlqs.addStatement(temperatureQuery(synop, stationID));
 	}
 	
-	private String stationQuery(SynopLand synop) {
+	private String stationQuery(Synop synop) {
 		if ((stationID = sqlqs.getStationID(synop.getStationCode())) > 0)
 			return null;
 		
 		stationID *= -1;
 		
-		String command = "INSERT INTO stations (type, code) VALUES (\'AAXX\', " + synop.getStationCode() + ");";
+		String command = "INSERT INTO stations (type, code) VALUES (\'" + synop.getStationType() + "\', \'" + synop.getStationCode() + "\');";
 		
 		return command;
 	}
+	
+	// test method
+//	private String dayHourAndWindIndicatorQuery(Synop synop) {
+//		String command = "INSERT INTO date (day) VALUES (" + stationID + ");";
+//		
+//		return command;
+//	}
 	
 //	private String stationQuery(SynopMobile synop) {		
 //		String command = "INSERT INTO stations (type, latitude, longitude, v_quadr, h_quadr) SELECT "; 

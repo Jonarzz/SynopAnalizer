@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+//TODO not working after reconnecting - fix
 public class SQLQuerySender {
 	
 	private final String SQL_URL = "jdbc:postgresql://localhost:5432/SynopBase";
@@ -23,7 +23,7 @@ public class SQLQuerySender {
 		try {
 			Class.forName("org.postgresql.Driver");
 			connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
-			connection.setAutoCommit(true);
+			connection.setAutoCommit(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -37,13 +37,13 @@ public class SQLQuerySender {
 		
 		try {
 			statement.executeUpdate(command);
+			connection.commit();
 		} catch (SQLException e) {
-			System.out.println(command);
 			e.printStackTrace();
 		}
 	}
 	
-	public int getStationID(int stationCode) {
+	public synchronized int getStationID(String stationCode) {
 		String command = "SELECT station_id FROM stations WHERE code = \'" + stationCode + "\';";
 		
 		int stationID = -1;
@@ -52,21 +52,21 @@ public class SQLQuerySender {
 		
 		try {
 			ResultSet rs = statement.executeQuery(command);
-			while (rs.next())
+			if (rs.next())
 				stationID = Integer.parseInt(rs.getString(1));
+			else {
+				command = "SELECT last_value FROM stations_station_id_seq;";
+				try {
+					rs = statement.executeQuery(command);
+					if (rs.next())
+						stationID = -1 * (Integer.parseInt(rs.getString(1)) + 1);
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}
-		
-		if (stationID == -1) {
-			command = "SELECT CURRVAL(\'stations_station_id_seq\'::regclass) FROM stations;";
-			try {
-				ResultSet rs = statement.executeQuery(command);
-				if (rs.next())
-					stationID = -1 * (Integer.parseInt(rs.getString(1)) + 1);
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 		}
 		
 		return stationID;
@@ -82,9 +82,21 @@ public class SQLQuerySender {
 	
 	public void closeConnection() {
 		try {
+			statement.close();
 			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public boolean isDisconnected() {
+		try {
+			if (connection.isClosed())
+				return true;
+		} catch (SQLException e) {
+			return true;
+		}
+		
+		return false;
 	}
 }

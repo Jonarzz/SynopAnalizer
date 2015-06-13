@@ -17,6 +17,8 @@ public class SynopAnalizer extends Application {
 	
 	private Stage primaryStage;
 	private AnchorPane mainLayout;
+	
+	private SynopAnalizerController controller;
 
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
@@ -32,7 +34,7 @@ public class SynopAnalizer extends Application {
             loader.setLocation(SynopAnalizer.class.getResource("view/SynopAnalizer.fxml"));
             mainLayout = (AnchorPane)loader.load();
             
-            SynopAnalizerController controller = (SynopAnalizerController)loader.getController();
+            controller = (SynopAnalizerController)loader.getController();
             controller.setStage(primaryStage);
             
             primaryStage.setOnCloseRequest(e -> Platform.exit());
@@ -43,6 +45,10 @@ public class SynopAnalizer extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+	
+	public void stop() {
+		controller.cancel();
 	}
 	
 	public static void main(String[] args) {
