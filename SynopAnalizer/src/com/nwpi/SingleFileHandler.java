@@ -37,11 +37,11 @@ public class SingleFileHandler {
 		trimStringArray();
 		
 		if (currentStringArray.get(0).equals(Constants.LAND_STATION_CODE))
-			return new SynopLand(currentStringArray);
+			return new SynopLand(currentStringArray, file.getName());
 		else if (currentStringArray.get(0).equals(Constants.SHIP_STATION_CODE))
-			return new SynopShip(currentStringArray);
+			return new SynopShip(currentStringArray, file.getName());
 		else 
-			return new SynopMobileLand(currentStringArray);
+			return new SynopMobileLand(currentStringArray, file.getName());
 	}
 	
 	private void getCurrentStringArray(int index) {

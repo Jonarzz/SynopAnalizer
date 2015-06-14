@@ -29,7 +29,7 @@ public class SynopProcessorThread  implements Runnable {
 	
 	public void run() {
 		for (Synop synop : synopList)
-			processor.sendSynopListToDatabase(synop);
+			processor.sendSynopToDatabase(synop);
 		
 		sac.increaseProcessedSynopLists();
 	}

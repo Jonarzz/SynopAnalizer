@@ -20,7 +20,7 @@ public abstract class SynopMobile extends Synop {
 	}
 	
 	protected void setStationCode() {
-		if (stringArray.size() < 2 || !stringIsValid(stringArray.get(1)))
+		if (stringArray.size() < 2 || stringArray.get(1).length() > 10)
 			return;
 		
 		stationCode = stringArray.get(1);

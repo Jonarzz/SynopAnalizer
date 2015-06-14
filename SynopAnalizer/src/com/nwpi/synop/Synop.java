@@ -42,7 +42,7 @@ public abstract class Synop {
 		setDateHourAndWindIndicator();
 		setHorizontalVisibility();
 		setTemperature();
-		setWind();
+		setWindAndOvercast();
 		setPressure();
 	}
 	
@@ -152,7 +152,7 @@ public abstract class Synop {
 	
 	protected abstract void setTemperatureString();
 	
-	private void setWind() {
+	private void setWindAndOvercast() {
 		setWindString();
 		
 		if (windString == null) {
@@ -173,10 +173,8 @@ public abstract class Synop {
 	private void setOvercast() {
 		int overcastInt = Character.getNumericValue(windString.charAt(0));
 		
-		if (overcastInt < 0 || overcastInt > 9) {
-			overcast = null;
+		if (overcastInt < 0 || overcastInt > 9)
 			return;
-		}
 		
 		if (overcastInt == 0)
 			overcast = Constants.CLEAR_SKY;
@@ -189,9 +187,11 @@ public abstract class Synop {
 	private void setWindDirection() {
 		String windDirectionString = windString.substring(1, 3);
 		
-		if (windDirectionString.equals("99") || windDirectionString.equals("||"))
+		if (windDirectionString.equals("99") || windDirectionString.equals("||")) {
 			windDirection = Constants.INITIAL_VALUE;
-			
+			return;
+		}
+		
 		try {
 			windDirection = Integer.parseInt(windDirectionString) * 10;
 		} catch (NumberFormatException e) {
