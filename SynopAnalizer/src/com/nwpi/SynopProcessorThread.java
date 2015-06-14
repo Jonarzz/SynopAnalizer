@@ -13,9 +13,11 @@ public class SynopProcessorThread  implements Runnable {
 	private SynopProcessor processor;
 	private SingleFileHandler sfh;
 	private ArrayList<Synop> synopList;
+	private SQLQuerySender sqlqs;
 	
 	public SynopProcessorThread(File file, SQLQuerySender sqlqs, SynopAnalizerController sac) {
 		this.sac = sac;
+		this.sqlqs = sqlqs;
 
 		try {
 			sfh = new SingleFileHandler(file);
@@ -28,8 +30,10 @@ public class SynopProcessorThread  implements Runnable {
 	}
 	
 	public void run() {
-		for (Synop synop : synopList)
-			processor.sendSynopToDatabase(synop);
+		sqlqs.createStatement();
+		for (Synop synop : synopList) 
+			processor.sendSynopToDatabase(synop);	
+		sqlqs.sendStatements();
 		
 		sac.increaseProcessedSynopLists();
 	}

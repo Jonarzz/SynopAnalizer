@@ -2,6 +2,7 @@ package com.nwpi.view;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -213,7 +214,7 @@ public class SynopAnalizerController {
 		filesTask = new Task<Void>() {
 			protected Void call() {	
 				setBlockedButtonsClickability();
-				
+				System.out.println(new Date().toString());
 				sqlqs = new SQLQuerySender();
 
 				processDirectory(new File(userChosenDirectory).listFiles());
@@ -221,7 +222,7 @@ public class SynopAnalizerController {
 				executor.shutdown();
 				while (!executor.isTerminated()) {}
 				sqlqs.closeConnection();
-				
+				System.out.println(new Date().toString());
 				if (filesNotFound != 0)
 					showFilesNotFoundDialog();
 				

@@ -24,8 +24,16 @@ public class SQLQuerySender {
 		try {
 			Class.forName("org.postgresql.Driver");
 			connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
-			connection.setAutoCommit(true);
+			connection.setAutoCommit(false);
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void createStatement() {
+		try {
+			statement = connection.createStatement();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -34,10 +42,17 @@ public class SQLQuerySender {
 		if (command == null)
 			return;
 		
-		createStatement();
-		
 		try {
-			statement.executeUpdate(command);
+			statement.addBatch(command);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void sendStatements() {
+		try {
+			statement.executeBatch();
+			connection.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -48,16 +63,15 @@ public class SQLQuerySender {
 		
 		int stationID = -1;
 		
-		createStatement();
-		
 		try {
-			ResultSet rs = statement.executeQuery(command);
+			Statement localStatement = connection.createStatement();
+			ResultSet rs = localStatement.executeQuery(command);
 			if (rs.next())
 				stationID = Integer.parseInt(rs.getString(1));
 			else {
 				command = "SELECT last_value FROM stations_station_id_seq;";
 				try {
-					rs = statement.executeQuery(command);
+					rs = localStatement.executeQuery(command);
 					if (rs.next())
 						stationID = -1 * (Integer.parseInt(rs.getString(1)) + 1);
 					rs.close();
@@ -70,14 +84,6 @@ public class SQLQuerySender {
 		}
 		
 		return stationID;
-	}
-	
-	private void createStatement() {
-		try {
-			statement = connection.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	public void closeConnection() {
