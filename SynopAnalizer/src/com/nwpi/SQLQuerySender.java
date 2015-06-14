@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-//TODO batching commands
+
 //TODO not working after reconnecting - fix
 public class SQLQuerySender {
 	
@@ -24,7 +24,7 @@ public class SQLQuerySender {
 		try {
 			Class.forName("org.postgresql.Driver");
 			connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
-			connection.setAutoCommit(true);
+			connection.setAutoCommit(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -38,6 +38,14 @@ public class SQLQuerySender {
 		
 		try {
 			statement.executeUpdate(command);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void sendQueries() {
+		try {
+			connection.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

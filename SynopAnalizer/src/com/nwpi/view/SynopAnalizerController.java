@@ -2,8 +2,12 @@ package com.nwpi.view;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.nwpi.SQLQuerySender;
@@ -43,7 +47,8 @@ public class SynopAnalizerController {
 	private File defaultDirectory;
 	private File userChosenDirectory;
 	
-	private ExecutorService executor;
+	private Semaphore semaphore;
+	private ThreadPoolExecutor executor;
 	private SQLQuerySender sqlqs;
 	
 	private Task<Void> filesTask;
@@ -58,7 +63,7 @@ public class SynopAnalizerController {
 	
 	@FXML
 	private void initialize() {			
-		executor = Executors.newFixedThreadPool(MAX_NUMBER_OF_THREADS);
+		initializeExecutor();
 		
 		setInitialDefaultDirectory();
 		setInitialButtonsClickability();
@@ -71,9 +76,28 @@ public class SynopAnalizerController {
 			openDirectory();
 		});
 		
-		cancelButton.setOnAction((event) -> {
+	cancelButton.setOnAction((event) -> {
 			cancel();
 		});
+	}
+	
+	private void initializeExecutor() {
+		semaphore = new Semaphore(MAX_NUMBER_OF_THREADS);
+		
+		executor = new ThreadPoolExecutor(MAX_NUMBER_OF_THREADS, MAX_NUMBER_OF_THREADS, 0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>()) {
+			public void execute(Runnable r) {
+				try {
+					semaphore.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+		        super.execute(r);
+			}
+			public void afterExecute(Runnable r, Throwable t) {
+				semaphore.release();  
+		        super.afterExecute(r,t);
+			}
+		};
 	}
 	
 	public void cancel() {
@@ -213,7 +237,7 @@ public class SynopAnalizerController {
 		filesTask = new Task<Void>() {
 			protected Void call() {	
 				setBlockedButtonsClickability();
-				
+				System.out.println(new Date().toString());
 				sqlqs = new SQLQuerySender();
 
 				processDirectory(new File(userChosenDirectory).listFiles());
@@ -221,7 +245,7 @@ public class SynopAnalizerController {
 				executor.shutdown();
 				while (!executor.isTerminated()) {}
 				sqlqs.closeConnection();
-				
+				System.out.println(new Date().toString());
 				if (filesNotFound != 0)
 					showFilesNotFoundDialog();
 				
@@ -244,7 +268,7 @@ public class SynopAnalizerController {
 		for (File file : directory)
 			if (file.isDirectory())
 				processDirectory(file.listFiles());
-			else {
+			else { 
 				SynopProcessorThread spt = new SynopProcessorThread(file, sqlqs, this);
 				executor.execute(spt);
 			}		
