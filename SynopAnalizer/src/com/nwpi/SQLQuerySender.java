@@ -8,21 +8,16 @@ import java.sql.Statement;
 
 public class SQLQuerySender {
 	
-	private final String SQL_URL = "jdbc:postgresql://localhost:5432/SynopBase";
-	private final String SQL_USERNAME = "postgres";
-	private final String SQL_PASSWORD = "vonsledz";
-	
 	private Connection connection;
 	private Statement statement;
 
-	public SQLQuerySender() {
-		createConnection();
+	public SQLQuerySender(SQLConnectionPool sqlcp) {
+		createConnection(sqlcp);
 	}
 	
-	private void createConnection() {
+	private void createConnection(SQLConnectionPool sqlcp) {
 		try {
-			Class.forName("org.postgresql.Driver");
-			connection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
+			connection = sqlcp.getConnection();
 			connection.setAutoCommit(false);
 		} catch (Exception e) {
 			e.printStackTrace();

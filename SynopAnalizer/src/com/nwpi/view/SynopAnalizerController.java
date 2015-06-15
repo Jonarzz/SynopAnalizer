@@ -5,10 +5,12 @@ import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.nwpi.SQLConnectionPool;
 import com.nwpi.SQLQuerySender;
 import com.nwpi.SingleFileHandler;
 import com.nwpi.SynopProcessor;
@@ -31,7 +33,7 @@ import javafx.stage.StageStyle;
 
 public class SynopAnalizerController {
 	
-	private final int MAX_NUMBER_OF_THREADS = 1;
+	private final int MAX_NUMBER_OF_THREADS = 10;
 	
 	@FXML
 	private Button analizeFileButton;
@@ -44,13 +46,13 @@ public class SynopAnalizerController {
 	@FXML
 	private Button cancelButton;
 	
-	private Stage stage;
-	
+	private Stage stage;	
 	private File defaultDirectory;
 	private File userChosenDirectory;
 	
-	private ExecutorService executor;
-	private SQLQuerySender sqlqs;
+	private Semaphore semaphore;
+	private ThreadPoolExecutor executor;
+	private SQLConnectionPool sqlcp;
 	
 	private Task<Void> filesTask;
 	
@@ -63,8 +65,8 @@ public class SynopAnalizerController {
 	}
 	
 	@FXML
-	private void initialize() {			
-		//executor = Executors.newFixedThreadPool(MAX_NUMBER_OF_THREADS);
+	private void initialize() {		
+		initializeExecutor();
 		
 		setInitialDefaultDirectory();
 		setInitialButtonsClickability();
@@ -82,14 +84,34 @@ public class SynopAnalizerController {
 		});
 	}
 	
+	private void initializeExecutor() {
+		semaphore = new Semaphore(MAX_NUMBER_OF_THREADS);
+		
+		executor = new ThreadPoolExecutor(MAX_NUMBER_OF_THREADS, MAX_NUMBER_OF_THREADS, 0L, TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>()) {
+			public void execute(Runnable r) {
+				try {
+					semaphore.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+		        super.execute(r);
+			}
+			public void afterExecute(Runnable r, Throwable t) {
+				semaphore.release();  
+		        super.afterExecute(r,t);
+			}
+		};
+	}
+	
 	public void cancel() {
-//		executor.shutdownNow();
-//		try {
-//			executor.awaitTermination(1, TimeUnit.SECONDS);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		sqlqs.closeConnection();
+		executor.shutdownNow();
+		try {
+			executor.awaitTermination(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		sqlcp.closeConnection();
+		
 		cancelled = true;
 		unbindProgress();
 		initializeNumbersForProcessing();
@@ -194,7 +216,7 @@ public class SynopAnalizerController {
 			protected Void call() {	
 				setBlockedButtonsClickability();
 				
-				sqlqs = new SQLQuerySender();
+				sqlcp = new SQLConnectionPool();
 
 				processFile(file);
 				
@@ -215,17 +237,15 @@ public class SynopAnalizerController {
 		filesTask = new Task<Void>() {
 			protected Void call() {	
 				setBlockedButtonsClickability();
-				// TODO delete after testing
-				System.out.println(new Date().toString());
 				
-				sqlqs = new SQLQuerySender();
+				sqlcp = new SQLConnectionPool();
 
 				processDirectory(new File(userChosenDirectory).listFiles());
 				
-				sqlqs.closeConnection();
-				// TODO delete after testing
-				System.out.println(new Date().toString());
-				
+				executor.shutdown();
+				while (!executor.isTerminated()) {}
+				sqlcp.closeConnection();
+
 				if (filesNotFound != 0)
 					showFilesNotFoundDialog();
 				
@@ -239,21 +259,20 @@ public class SynopAnalizerController {
 		};
 	}
 	
-	private void processFile(File file) {
-		SingleFileHandler sfh;
-		ArrayList<Synop> synopList;
-		SynopProcessor processor;
-		
+	private void processFile(File file) {		
 		try {
-			sfh = new SingleFileHandler(file);
-			synopList = sfh.getSynopObjectList();
-			processor = new SynopProcessor(sqlqs);
+			SingleFileHandler sfh = new SingleFileHandler(file);
+			ArrayList<Synop> synopList = sfh.getSynopObjectList();
+			SQLQuerySender sqlqs = new SQLQuerySender(sqlcp);
+			SynopProcessor processor = new SynopProcessor(sqlqs);
+			
 			sqlqs.createStatement();
+			
 			for (Synop synop : synopList) 
 				processor.sendSynopToDatabase(synop);	
-			sqlqs.sendStatements();
 			
-			numberOfProcessedSynopLists++;
+			sqlqs.sendStatements();
+			sqlqs.closeConnection();
 		} catch (FileNotFoundException e) {
 			filesNotFound++;
 		}
@@ -264,24 +283,8 @@ public class SynopAnalizerController {
 			if (file.isDirectory())
 				processDirectory(file.listFiles());
 			else {
-				SingleFileHandler sfh;
-				ArrayList<Synop> synopList;
-				SynopProcessor processor;
-				
-				try {
-					sfh = new SingleFileHandler(file);
-					synopList = sfh.getSynopObjectList();
-					processor = new SynopProcessor(sqlqs);
-					sqlqs.createStatement();
-					for (Synop synop : synopList) 
-						processor.sendSynopToDatabase(synop);	
-					sqlqs.sendStatements();
-					
-					numberOfProcessedSynopLists++;
-				} catch (FileNotFoundException e) {
-					filesNotFound++;
-				}
-				
+				SynopProcessorThread spt = new SynopProcessorThread(file, sqlcp, this);
+				executor.execute(spt);
 			}		
 	}
 	

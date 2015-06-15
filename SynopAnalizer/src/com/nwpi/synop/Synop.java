@@ -36,7 +36,7 @@ public abstract class Synop {
 	public Synop(ArrayList<String> stringArray, String fileName) {		
 		this.stringArray = stringArray;
 		this.fileName = fileName;
-		System.out.println(stringArray);
+
 		setStationType();
 		setStationCode();
 		setDateHourAndWindIndicator();

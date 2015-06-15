@@ -26,10 +26,15 @@ public class SynopProcessor {
 	}
 
 	private void analizeSynop(Synop synop) {
+		String stationCode;
+		
 		if (synop instanceof SynopLand)
-			sqlqs.addStatement(stationQuery((SynopLand)synop));
+			sqlqs.addStatement(stationCode = stationQuery((SynopLand)synop));
 		else
-			sqlqs.addStatement(stationQuery((SynopMobile)synop));
+			sqlqs.addStatement(stationCode = stationQuery((SynopMobile)synop));
+		
+		if (stationCode == null)
+			return;
 			
 		sqlqs.addStatement(dateAndWeatherQuery(synop));
 	}
@@ -38,14 +43,16 @@ public class SynopProcessor {
 		if ((stationID = sqlqs.getStationID(synop.getStationCode())) > 0)
 			return null;
 		
+		String tempString;
+		
 		stationID *= -1;
 		
 		String command = "INSERT INTO stations (type, code) VALUES (\'AAXX\', ";
 		
-		if (synop.getStationCode() != null)
-			command += "\'" + synop.getStationCode() + "\');";
+		if ((tempString = synop.getStationCode()) != null)
+			command += "\'" + tempString + "\');";
 		else
-			command += "NULL);";
+			return null;
 
 		return command;
 	}
@@ -54,37 +61,41 @@ public class SynopProcessor {
 		if ((stationID = sqlqs.getStationID(synop.getStationCode())) > 0)
 			return null;
 		
+		int tempInt;
+		float tempFloat;
+		String tempString;
+		
 		stationID *= -1;
 		
 		String command = "INSERT INTO stations (type, code, latitude, longitude, v_quadr, h_quadr) VALUES (";
 		
-		if (synop.getStationType() == null)
+		if ((tempString = synop.getStationType()) == null)
 			command += "NULL, ";
 		else
-			command += "\'" + synop.getStationType() + "\', ";
+			command += "\'" + tempString + "\', ";
 		
-		if (synop.getStationCode() != null)
-			command += "\'" + synop.getStationCode() + "\', ";
-		else
-			command += "NULL, ";
-		
-		if (synop.getLatitude() != Constants.INITIAL_VALUE)
-			command += synop.getLatitude() + ", ";
+		if ((tempString = synop.getStationCode()) != null)
+			command += "\'" + tempString + "\', ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getLongitude() != Constants.INITIAL_VALUE)
-			command += synop.getLongitude() + ", ";
+		if ((tempFloat = synop.getLatitude()) != Constants.INITIAL_VALUE)
+			command += tempFloat + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getVerticalQuadrantMultiplier() != Constants.INITIAL_VALUE)
-			command += synop.getVerticalQuadrantMultiplier() + ", ";
+		if ((tempFloat = synop.getLongitude()) != Constants.INITIAL_VALUE)
+			command += tempFloat + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getHorizontalQuadrantMultiplier() != Constants.INITIAL_VALUE)
-			command += synop.getHorizontalQuadrantMultiplier() + ");";
+		if ((tempInt = synop.getVerticalQuadrantMultiplier()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
+		else
+			command += "NULL, ";
+		
+		if ((tempInt = synop.getHorizontalQuadrantMultiplier()) != Constants.INITIAL_VALUE)
+			command += tempInt + ");";
 		else
 			command += "NULL);";
 
@@ -92,68 +103,70 @@ public class SynopProcessor {
 	}
 	
 	private String dateAndWeatherQuery(Synop synop) {
-		int windIndicator;
+		int tempInt;
+		float tempFloat;
+		String tempString;
 		
 		String command = "INSERT INTO date_and_weather (year, month, day, hour, station_id, " +
 				"wind_unit, temperature, horizontal_visibility, overcast, wind_direction, wind_speed, pressure) VALUES (";
 		
-		if (synop.getYear() != Constants.INITIAL_VALUE)
-			command += synop.getYear() + ", ";
+		if ((tempInt = synop.getYear()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getMonth() != Constants.INITIAL_VALUE)
-			command += synop.getMonth() + ", ";
+		if ((tempInt = synop.getMonth()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getDay() != Constants.INITIAL_VALUE)
-			command += synop.getDay() + ", ";
+		if ((tempInt = synop.getDay()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getHour() != Constants.INITIAL_VALUE)
-			command += synop.getHour() + ", "; 
+		if ((tempInt = synop.getHour()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", "; 
 		else
 			command += "NULL, ";
 		
 		command += stationID + ", ";
 		
-		if ((windIndicator = synop.getWindIndicator()) == Constants.INITIAL_VALUE)
+		if ((tempInt = synop.getWindIndicator()) == Constants.INITIAL_VALUE)
 			command += "NULL, ";
 		else
-			if (windIndicator == Constants.WS_ANEMOMETER_IN_KNOT || windIndicator == Constants.WS_WILDTYPE_IN_KNOT)
+			if (tempInt == Constants.WS_ANEMOMETER_IN_KNOT || tempInt == Constants.WS_WILDTYPE_IN_KNOT)
 				command += "\'knot\', ";
 			else
 				command += "\'mps\', ";
 		
-		if (synop.getTemperature() != Constants.INITIAL_VALUE)
-			command += synop.getTemperature() + ", ";
+		if ((tempFloat = synop.getTemperature()) != Constants.INITIAL_VALUE)
+			command += tempFloat + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getHorizontalVisibility() != null)
-			command += "\'" + synop.getHorizontalVisibility() + "\', ";
+		if ((tempString = synop.getHorizontalVisibility()) != null)
+			command += "\'" + tempString + "\', ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getOvercast() != null)
-			command += "\'" + synop.getOvercast() + "\', "; 
+		if ((tempString = synop.getOvercast()) != null)
+			command += "\'" + tempString + "\', "; 
 		else
 			command += "NULL, ";
 		
-		if (synop.getWindDirection() != Constants.INITIAL_VALUE)
-			command += synop.getWindDirection() + ", ";
+		if ((tempInt = synop.getWindDirection()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getWindSpeed() != Constants.INITIAL_VALUE)
-			command += synop.getWindSpeed() + ", ";
+		if ((tempInt = synop.getWindSpeed()) != Constants.INITIAL_VALUE)
+			command += tempInt + ", ";
 		else
 			command += "NULL, ";
 		
-		if (synop.getPressure() != Constants.INITIAL_VALUE)
-			command += synop.getPressure() + ");";
+		if ((tempFloat = synop.getPressure()) != Constants.INITIAL_VALUE)
+			command += tempFloat + ");";
 		else
 			command += "NULL);";
 
