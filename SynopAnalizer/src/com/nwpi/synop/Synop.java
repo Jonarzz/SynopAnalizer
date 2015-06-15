@@ -36,7 +36,7 @@ public abstract class Synop {
 	public Synop(ArrayList<String> stringArray, String fileName) {		
 		this.stringArray = stringArray;
 		this.fileName = fileName;
-
+		System.out.println(stringArray);
 		setStationType();
 		setStationCode();
 		setDateHourAndWindIndicator();
@@ -137,13 +137,13 @@ public abstract class Synop {
 			return;
 		}
 
-		if (temperatureString.charAt(1) == Constants.PLUS_SIGN_TEMPERATURE)
+		if (temperatureString.charAt(0) == Constants.PLUS_SIGN_TEMPERATURE)
 			temperature = 1;
 		else
 			temperature = -1;
 	
 		try {
-			temp = Float.parseFloat(temperatureString) / 10;
+			temp = Float.parseFloat(temperatureString.substring(1, 4)) / 10;
 			temperature *= temp;
 		} catch (NumberFormatException e) {
 			temperature = Constants.INITIAL_VALUE;

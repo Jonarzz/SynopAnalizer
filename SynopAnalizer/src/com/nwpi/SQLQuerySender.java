@@ -5,8 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-//TODO batching commands
-//TODO not working after reconnecting - fix
+
 public class SQLQuerySender {
 	
 	private final String SQL_URL = "jdbc:postgresql://localhost:5432/SynopBase";

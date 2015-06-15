@@ -16,7 +16,7 @@ public class SynopLand extends Synop {
 	}
 	
 	protected void setStationCode() {
-		if (stringArray.size() < 3 || stringArray.get(2).length() > 10)
+		if (stringArray.size() < 3 || stringArray.get(2).length() > 10 || stringArray.get(2).contains("/"))
 			return;
 		
 		stationCode = stringArray.get(2);
@@ -40,13 +40,13 @@ public class SynopLand extends Synop {
 			return;
 		
 		if (stringArray.get(5).charAt(0) == '0') {
-			if (stringArray.size() < 7 || !stringIsValid(stringArray.get(5)))
+			if (stringArray.size() < 7 || !stringIsValid(stringArray.get(6)))
 				return;
 			
-			temperatureString = stringArray.get(6).substring(2, 5);
+			temperatureString = stringArray.get(6).substring(1, 5);
 		}
 		else if (stringIsValid(stringArray.get(5)))
-			temperatureString = stringArray.get(5).substring(2, 5);
+			temperatureString = stringArray.get(5).substring(1, 5);
 	}
 	
 	protected void setWindString() {

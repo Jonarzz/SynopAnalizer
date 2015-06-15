@@ -43,7 +43,7 @@ public abstract class SynopMobile extends Synop {
 		if (stringArray.size() < 8 || !stringIsValid(stringArray.get(7)))
 			return;
 
-		temperatureString = stringArray.get(7).substring(2, 5);
+		temperatureString = stringArray.get(7).substring(1, 5);
 	}
 	
 	protected void setWindString() {

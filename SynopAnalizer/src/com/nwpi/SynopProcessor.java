@@ -31,8 +31,7 @@ public class SynopProcessor {
 		else
 			sqlqs.addStatement(stationQuery((SynopMobile)synop));
 			
-		sqlqs.addStatement(dateQuery(synop));
-		sqlqs.addStatement(weatherQuery(synop));
+		sqlqs.addStatement(dateAndWeatherQuery(synop));
 	}
 	
 	private String stationQuery(SynopLand synop) {
@@ -92,8 +91,11 @@ public class SynopProcessor {
 		return command;
 	}
 	
-	private String dateQuery(Synop synop) {
-		String command = "INSERT INTO date (year, month, day, hour, station_id) VALUES (";
+	private String dateAndWeatherQuery(Synop synop) {
+		int windIndicator;
+		
+		String command = "INSERT INTO date_and_weather (year, month, day, hour, station_id, " +
+				"wind_unit, temperature, horizontal_visibility, overcast, wind_direction, wind_speed, pressure) VALUES (";
 		
 		if (synop.getYear() != Constants.INITIAL_VALUE)
 			command += synop.getYear() + ", ";
@@ -115,15 +117,7 @@ public class SynopProcessor {
 		else
 			command += "NULL, ";
 		
-		command += stationID + ");";
-
-		return command;
-	}
-	
-	private String weatherQuery(Synop synop) {
-		int windIndicator;
-		
-		String command = "INSERT INTO weather (wind_unit, temperature, horizontal_visibility, overcast, wind_direction, wind_speed, pressure, station_id) VALUES (";
+		command += stationID + ", ";
 		
 		if ((windIndicator = synop.getWindIndicator()) == Constants.INITIAL_VALUE)
 			command += "NULL, ";
@@ -159,11 +153,9 @@ public class SynopProcessor {
 			command += "NULL, ";
 		
 		if (synop.getPressure() != Constants.INITIAL_VALUE)
-			command += synop.getPressure() + ", ";
+			command += synop.getPressure() + ");";
 		else
-			command += "NULL, ";
-		
-		command += stationID + ");";
+			command += "NULL);";
 
 		return command;
 	}
