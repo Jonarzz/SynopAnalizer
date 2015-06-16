@@ -10,10 +10,11 @@ import com.nwpi.view.SynopAnalizerController;
 public class SynopProcessorThread  implements Runnable {
 	
 	private SynopAnalizerController sac;
+	private SQLConnectionPool sqlcp;
+	
 	private SynopProcessor processor;
 	private SingleFileHandler sfh;
 	private ArrayList<Synop> synopList;
-	private SQLConnectionPool sqlcp;
 	
 	public SynopProcessorThread(File file, SQLConnectionPool sqlcp, SynopAnalizerController sac) {
 		this.sac = sac;
@@ -31,6 +32,7 @@ public class SynopProcessorThread  implements Runnable {
 	public void run() {		
 		SQLQuerySender sqlqs = new SQLQuerySender(sqlcp);
 		processor = new SynopProcessor(sqlqs);
+		
 		sqlqs.createStatement();
 		
 		for (Synop synop : synopList) 

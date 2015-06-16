@@ -26,11 +26,7 @@ public class DividedFileString {
 	public int length() {
 		return stringsFromFile.size();
 	}
-	
-	public ArrayList<ArrayList<String>> getDividedStringsArray() {
-		return dividedStringsArray;	
-	}
-	
+
 	public ArrayList<String> getSingleDividedString(int index) {
 		return dividedStringsArray.get(index);
 	}

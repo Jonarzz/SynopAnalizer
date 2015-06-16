@@ -9,11 +9,13 @@ public class SynopShip extends SynopMobile {
 	}
 	
 	protected void setPressureString() {
-		if (stringArray.size() < 10 || stringArray.get(9).charAt(0) != '4' || 
-				stringArray.get(9).charAt(1) != '0' || stringArray.get(9).charAt(1) != '9' ||
-					!stringIsValid(stringArray.get(9)))
+		String temp;
+		
+		if (stringArray.size() < 10 || !stringIsValid((temp = stringArray.get(9))) || 
+				temp.charAt(0) != '4' || temp.charAt(1) != '0' ||
+					temp.charAt(1) != '9')
 			return;
 		
-		pressureString = stringArray.get(9);
+		pressureString = temp;
 	}
 }

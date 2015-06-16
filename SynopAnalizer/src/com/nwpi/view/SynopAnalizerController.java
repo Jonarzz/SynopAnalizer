@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -33,7 +32,7 @@ import javafx.stage.StageStyle;
 
 public class SynopAnalizerController {
 	
-	private final int MAX_NUMBER_OF_THREADS = 10;
+	private final int MAX_NUMBER_OF_THREADS = 5;
 	
 	@FXML
 	private Button analizeFileButton;
@@ -62,6 +61,30 @@ public class SynopAnalizerController {
 	
 	public void setStage(Stage stage) {
 		this.stage = stage;
+	}
+	
+	public void cancel() {
+		executor.shutdownNow();
+		try {
+			executor.awaitTermination(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		sqlcp.closeConnection();
+		
+		cancelled = true;
+		unbindProgress();
+		initializeNumbersForProcessing();
+		clearProgress();
+		setInitialButtonsClickability();
+	}
+	
+	public void increaseProcessedSynopLists() {
+		numberOfProcessedSynopLists++;
+	}
+	
+	public void increaseFilesNotFound() {
+		filesNotFound++;
 	}
 	
 	@FXML
@@ -98,33 +121,9 @@ public class SynopAnalizerController {
 			}
 			public void afterExecute(Runnable r, Throwable t) {
 				semaphore.release();  
-		        super.afterExecute(r,t);
+		        super.afterExecute(r, t);
 			}
 		};
-	}
-	
-	public void cancel() {
-		executor.shutdownNow();
-		try {
-			executor.awaitTermination(1, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		sqlcp.closeConnection();
-		
-		cancelled = true;
-		unbindProgress();
-		initializeNumbersForProcessing();
-		clearProgress();
-		setInitialButtonsClickability();
-	}
-	
-	public void increaseProcessedSynopLists() {
-		numberOfProcessedSynopLists++;
-	}
-	
-	public void increaseFilesNotFound() {
-		filesNotFound++;
 	}
 	
 	private void setInitialDefaultDirectory() {
@@ -152,6 +151,8 @@ public class SynopAnalizerController {
 		
 		initializeFilesTaskForSingleFile(file);
 		Thread fileThread = new Thread(filesTask);
+		fileThread.setDaemon(true);
+		
 		fileThread.start();
 	}
 	
@@ -204,7 +205,7 @@ public class SynopAnalizerController {
 	
 	private void analizeDirectory(URI userChosenDirectory) {
 		initializeFilesTaskForDirectory(userChosenDirectory);
-
+		
 		Thread filesThread = new Thread(filesTask); 
 		filesThread.setDaemon(true); 
 		
@@ -273,6 +274,8 @@ public class SynopAnalizerController {
 			
 			sqlqs.sendStatements();
 			sqlqs.closeConnection();
+			
+			numberOfProcessedSynopLists++;
 		} catch (FileNotFoundException e) {
 			filesNotFound++;
 		}
@@ -332,6 +335,7 @@ public class SynopAnalizerController {
 		
 		Thread th = new Thread(task); 
 		th.setDaemon(true); 
+		
 		th.start(); 	
 	}
 	

@@ -6,6 +6,8 @@ import com.nwpi.Constants;
 
 public abstract class SynopMobile extends Synop {
 	
+	private String temp;
+	
 	private float latitude;
 	private float longitude;
 	
@@ -20,69 +22,64 @@ public abstract class SynopMobile extends Synop {
 	}
 	
 	protected void setStationCode() {
-		if (stringArray.size() < 2 || stringArray.get(1).length() > 10)
+		if (stringArray.size() < 2 || (temp = stringArray.get(1)).length() > 10 || temp.contains("/"))
 			return;
 		
-		stationCode = stringArray.get(1);
+		stationCode = temp;
 	}
 	
 	protected void setHorizontalVisibilityInt() {
-		if (stringArray.size() < 6 || !stringIsValid(stringArray.get(5))) {
+		if (stringArray.size() < 6 || !stringIsValid((temp = stringArray.get(5)))) {
 			horizontalVisibilityInt = Constants.INITIAL_VALUE;
 			return;
 		}
 		
 		try {
-			horizontalVisibilityInt = Integer.parseInt(stringArray.get(5).substring(3, 5));
+			horizontalVisibilityInt = Integer.parseInt(temp.substring(3, 5));
 		} catch (NumberFormatException e) {
 			horizontalVisibilityInt = Constants.INITIAL_VALUE;
 		}
 	}
 	
 	protected void setTemperatureString() {	
-		if (stringArray.size() < 8 || !stringIsValid(stringArray.get(7)))
+		if (stringArray.size() < 8 || !stringIsValid((temp = stringArray.get(7))))
 			return;
 
-		temperatureString = stringArray.get(7).substring(1, 5);
+		temperatureString = temp.substring(1, 5);
 	}
 	
 	protected void setWindString() {
-		if (stringArray.size() < 7 || !stringIsValid(stringArray.get(6)))
+		if (stringArray.size() < 7 || !stringIsValid((temp = stringArray.get(6))))
 			return;
 		
-		windString = stringArray.get(6);
+		windString = temp;
 	}
 	
 	protected abstract void setPressureString();
 	
 	protected void setLatitude() {
-		if (stringArray.size() < 4 || !stringIsValid(stringArray.get(3)))
+		if (stringArray.size() < 4 || !stringIsValid((temp = stringArray.get(3))))
 			return;
 		
-		String latitudeString = stringArray.get(3).substring(2, 5);
-		int temp = 0;
+		String latitudeString = temp.substring(2, 5);
+		int tempInt = 0;
 		
 		try {
-			temp = Integer.parseInt(latitudeString);
+			tempInt = Integer.parseInt(latitudeString);
 		} catch (NumberFormatException e) {
 			latitude = Constants.INITIAL_VALUE;
 			return;
 		}
 		
-		latitude = (float)temp / 10;
+		latitude = (float)tempInt / 10;
 	}
 	
 	protected void setLongitudeAndQuadrant() {
-		if (stringArray.size() < 5 || !stringIsValid(stringArray.get(4)))
+		if (stringArray.size() < 5 || !stringIsValid((temp = stringArray.get(4))))
 			return;
-		
-		String longitudeString = stringArray.get(4);
-		
-		if (longitudeString.length() != 5)
-			return;
-		
-		setQuadrantMultipliers(longitudeString.charAt(0));
-		setLongitude(longitudeString.substring(1, 5));
+
+		setQuadrantMultipliers(temp.charAt(0));
+		setLongitude(temp.substring(1, 5));
 	}
 	
 	protected void setQuadrantMultipliers(char q) {
@@ -111,16 +108,16 @@ public abstract class SynopMobile extends Synop {
 	}
 	
 	protected void setLongitude(String str) {
-		int temp = 0;
+		int tempInt = 0;
 		
 		try {
-			temp = Integer.parseInt(str);
+			tempInt = Integer.parseInt(str);
 		} catch (NumberFormatException e) {
 			longitude = Constants.INITIAL_VALUE;
 			return;
 		}
 		
-		longitude = (float)temp / 10;
+		longitude = (float)tempInt / 10;
 	}
 
 	public float getLatitude() {

@@ -26,16 +26,11 @@ public class SynopProcessor {
 	}
 
 	private void analizeSynop(Synop synop) {
-		String stationCode;
-		
 		if (synop instanceof SynopLand)
-			sqlqs.addStatement(stationCode = stationQuery((SynopLand)synop));
+			sqlqs.addStatement(stationQuery((SynopLand)synop));
 		else
-			sqlqs.addStatement(stationCode = stationQuery((SynopMobile)synop));
-		
-		if (stationCode == null)
-			return;
-			
+			sqlqs.addStatement(stationQuery((SynopMobile)synop));
+
 		sqlqs.addStatement(dateAndWeatherQuery(synop));
 	}
 	
@@ -43,16 +38,15 @@ public class SynopProcessor {
 		if ((stationID = sqlqs.getStationID(synop.getStationCode())) > 0)
 			return null;
 		
-		String tempString;
-		
 		stationID *= -1;
 		
+		String tempString;
 		String command = "INSERT INTO stations (type, code) VALUES (\'AAXX\', ";
 		
 		if ((tempString = synop.getStationCode()) != null)
 			command += "\'" + tempString + "\');";
 		else
-			return null;
+			command += "NULL);";
 
 		return command;
 	}
@@ -61,12 +55,11 @@ public class SynopProcessor {
 		if ((stationID = sqlqs.getStationID(synop.getStationCode())) > 0)
 			return null;
 		
+		stationID *= -1;
+		
 		int tempInt;
 		float tempFloat;
 		String tempString;
-		
-		stationID *= -1;
-		
 		String command = "INSERT INTO stations (type, code, latitude, longitude, v_quadr, h_quadr) VALUES (";
 		
 		if ((tempString = synop.getStationType()) == null)

@@ -6,6 +6,8 @@ import com.nwpi.Constants;
 
 public class SynopLand extends Synop {
 	
+	private String temp;
+	
 	private int rainfall;
 	private String rainfallString;
 	
@@ -16,20 +18,20 @@ public class SynopLand extends Synop {
 	}
 	
 	protected void setStationCode() {
-		if (stringArray.size() < 3 || stringArray.get(2).length() > 10 || stringArray.get(2).contains("/"))
+		if (stringArray.size() < 3 || (temp = stringArray.get(2)).length() > 10 || temp.contains("/"))
 			return;
 		
-		stationCode = stringArray.get(2);
+		stationCode = temp;
 	}
 	
 	protected void setHorizontalVisibilityInt() {
-		if (stringArray.size() < 4 || !stringIsValid(stringArray.get(3))) {
+		if (stringArray.size() < 4 || !stringIsValid((temp = stringArray.get(3)))) {
 			horizontalVisibilityInt = Constants.INITIAL_VALUE;
 			return;
 		}
 		
 		try {
-			horizontalVisibilityInt = Integer.parseInt(stringArray.get(3).substring(3, 5));
+			horizontalVisibilityInt = Integer.parseInt(temp.substring(3, 5));
 		} catch (NumberFormatException e) {
 			horizontalVisibilityInt = Constants.INITIAL_VALUE;
 		}
@@ -50,17 +52,17 @@ public class SynopLand extends Synop {
 	}
 	
 	protected void setWindString() {
-		if (stringArray.size() < 5 || !stringIsValid(stringArray.get(4)))
+		if (stringArray.size() < 5 || !stringIsValid((temp = stringArray.get(4))))
 			return;
 		
-		windString = stringArray.get(4);
+		windString = temp;
 	}
 	
 	protected void setPressureString() {
-		if (stringArray.size() < 8 || stringArray.get(7).charAt(0) != '3' || !stringIsValid(stringArray.get(7)))
+		if (stringArray.size() < 8 || stringArray.get(7).charAt(0) != '3' || !stringIsValid((temp = stringArray.get(7))))
 				return;
 		
-		pressureString = stringArray.get(7);
+		pressureString = temp;
 	}
 	
 	private void setRainfall() {
@@ -81,10 +83,10 @@ public class SynopLand extends Synop {
 	}
 	
 	protected void setRainfallString() {
-		if (stringArray.size() < 11 || stringArray.get(10).charAt(0) != '6' || !stringIsValid(stringArray.get(10)))
+		if (stringArray.size() < 11 || stringArray.get(10).charAt(0) != '6' || !stringIsValid((temp = stringArray.get(10))))
 			return;
 		
-		rainfallString = stringArray.get(10);
+		rainfallString = temp;
 	}
 	
 	public String getStationCode() {

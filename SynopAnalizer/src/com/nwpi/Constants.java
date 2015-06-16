@@ -10,6 +10,7 @@ public class Constants {
 	public static final String CHAPTER_5_CODE = "555";
 
 	public static final char PLUS_SIGN_TEMPERATURE = '0';
+	public static final char MINUS_SIGN_TEMPERATURE = '1';
 	
 	public static final String LAND_STATION_CODE = "AAXX";
 	public static final String SHIP_STATION_CODE = "BBXX";

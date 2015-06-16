@@ -6,7 +6,7 @@ import com.nwpi.Constants;
 
 public abstract class Synop {
 	
-	protected final int VALID_STRING_LENGTH = 5;
+	private final int VALID_STRING_LENGTH = 5;
 	
 	protected ArrayList<String> stringArray;
 	private String fileName;
@@ -139,8 +139,12 @@ public abstract class Synop {
 
 		if (temperatureString.charAt(0) == Constants.PLUS_SIGN_TEMPERATURE)
 			temperature = 1;
-		else
+		else if (temperatureString.charAt(0) == Constants.MINUS_SIGN_TEMPERATURE)
 			temperature = -1;
+		else {
+			temperature = Constants.INITIAL_VALUE;
+			return;
+		}
 	
 		try {
 			temp = Float.parseFloat(temperatureString.substring(1, 4)) / 10;
