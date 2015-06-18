@@ -1,4 +1,4 @@
-package com.nwpi;
+package com.nwpi.sql;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

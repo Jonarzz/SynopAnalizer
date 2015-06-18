@@ -1,8 +1,8 @@
-package com.nwpi;
+package com.nwpi.processor;
 
-import com.nwpi.synop.Synop;
-import com.nwpi.synop.SynopLand;
-import com.nwpi.synop.SynopMobile;
+import com.nwpi.Constants;
+import com.nwpi.sql.*;
+import com.nwpi.synop.*;
 
 public class SynopProcessor {	
 	

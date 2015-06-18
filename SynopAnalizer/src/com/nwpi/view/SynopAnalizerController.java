@@ -9,11 +9,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.nwpi.SQLConnectionPool;
-import com.nwpi.SQLQuerySender;
-import com.nwpi.SingleFileHandler;
-import com.nwpi.SynopProcessor;
-import com.nwpi.SynopProcessorThread;
+import com.nwpi.sql.*;
+import com.nwpi.processor.*;
+import com.nwpi.files.*;
 import com.nwpi.synop.Synop;
 
 import javafx.application.Platform;

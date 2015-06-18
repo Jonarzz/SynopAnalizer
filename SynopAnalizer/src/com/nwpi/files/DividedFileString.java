@@ -1,4 +1,4 @@
-package com.nwpi;
+package com.nwpi.files;
 
 import java.util.ArrayList;
 import java.util.Arrays;

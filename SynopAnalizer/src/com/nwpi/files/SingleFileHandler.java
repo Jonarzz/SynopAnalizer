@@ -1,9 +1,10 @@
-package com.nwpi;
+package com.nwpi.files;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
+import com.nwpi.Constants;
 import com.nwpi.synop.*;
 
 public class SingleFileHandler {

@@ -1,4 +1,4 @@
-package com.nwpi;
+package com.nwpi.sql;
 
 import java.beans.PropertyVetoException;
 import java.sql.Connection;

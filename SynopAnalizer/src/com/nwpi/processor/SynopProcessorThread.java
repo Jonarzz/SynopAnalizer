@@ -1,10 +1,12 @@
-package com.nwpi;
+package com.nwpi.processor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-import com.nwpi.synop.Synop;
+import com.nwpi.synop.*;
+import com.nwpi.sql.*;
+import com.nwpi.files.*;
 import com.nwpi.view.SynopAnalizerController;
 
 public class SynopProcessorThread  implements Runnable {

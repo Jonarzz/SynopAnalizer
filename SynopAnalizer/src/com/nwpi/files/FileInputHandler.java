@@ -1,4 +1,4 @@
-package com.nwpi;
+package com.nwpi.files;
 
 import java.io.BufferedReader;
 import java.io.File;
