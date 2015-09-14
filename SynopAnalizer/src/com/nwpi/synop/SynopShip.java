@@ -4,6 +4,10 @@ import java.util.ArrayList;
 
 public class SynopShip extends SynopMobile {
 	
+	public SynopShip(ArrayList<String> stringArray) {
+		this(stringArray, null);
+	}
+	
 	public SynopShip(ArrayList<String> stringArray, String fileName) {
 		super(stringArray, fileName);
 	}

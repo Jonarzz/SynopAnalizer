@@ -3,6 +3,10 @@ package com.nwpi.synop;
 import java.util.ArrayList;
 
 public class SynopMobileLand extends SynopMobile {
+	
+	public SynopMobileLand(ArrayList<String> stringArray) {
+		this(stringArray, null);
+	}
 
 	public SynopMobileLand(ArrayList<String> stringArray, String fileName) {
 		super(stringArray, fileName);
