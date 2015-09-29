@@ -11,6 +11,10 @@ public class SynopLand extends Synop {
 	private int rainfall;
 	private String rainfallString;
 	
+	public SynopLand(ArrayList<String> stringArray) {
+		this(stringArray, null);
+	}
+	
 	public SynopLand(ArrayList<String> stringArray, String fileName) {
 		super(stringArray, fileName);
 		

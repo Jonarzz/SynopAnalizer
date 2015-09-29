@@ -14,6 +14,10 @@ public abstract class SynopMobile extends Synop {
 	private int verticalQuadrantMultiplier;
 	private int horizontalQuadrantMultiplier;
 	
+	public SynopMobile(ArrayList<String> stringArray) {
+		this(stringArray,null);
+	}
+	
 	public SynopMobile(ArrayList<String> stringArray, String fileName) {
 		super(stringArray, fileName);
 		

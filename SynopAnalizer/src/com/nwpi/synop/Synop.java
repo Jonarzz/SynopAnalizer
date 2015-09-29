@@ -11,8 +11,8 @@ public abstract class Synop {
 	protected ArrayList<String> stringArray;
 	private String fileName;
 	
-	private String stationType;
-	protected String stationCode;
+	private String stationType; 
+	protected String stationCode; 
 
 	private int year;
 	private int month;
@@ -24,7 +24,8 @@ public abstract class Synop {
 	private float temperature;
 	
 	private String overcast;
-	private int windDirection;
+	private int octa; 
+	private int windDirection; 
 	private int windSpeed;
 	private float pressure;
 		
@@ -32,6 +33,10 @@ public abstract class Synop {
 	protected String temperatureString;
 	protected String windString;
 	protected String pressureString;
+	
+	public Synop(ArrayList<String> stringArray) {		
+		this(stringArray,null);
+	}
 	
 	public Synop(ArrayList<String> stringArray, String fileName) {		
 		this.stringArray = stringArray;
@@ -74,22 +79,24 @@ public abstract class Synop {
 	}	
 
 	private void setDate() {
-		try {
-			year = Integer.parseInt(fileName.substring(0, 4));
-		} catch (NumberFormatException e) {
-			year = Constants.INITIAL_VALUE;
-		}
+		if (fileName != null) {
+			try {
+				year = Integer.parseInt(fileName.substring(0, 4));
+			} catch (NumberFormatException e) {
+				year = Constants.INITIAL_VALUE;
+			}
 		
-		try {
-			month = Integer.parseInt(fileName.substring(4, 6));
-		} catch (NumberFormatException e) {
-			month = Constants.INITIAL_VALUE;
-		}
+			try {
+				month = Integer.parseInt(fileName.substring(4, 6));
+			} catch (NumberFormatException e) {
+				month = Constants.INITIAL_VALUE;
+			}
 		
-		try {
+			try {
 			day = Integer.parseInt(fileName.substring(6, 8));
-		} catch (NumberFormatException e) {
-			day = Constants.INITIAL_VALUE;
+			} catch (NumberFormatException e) {
+				day = Constants.INITIAL_VALUE;
+			}
 		}
 	}
 	
@@ -98,6 +105,11 @@ public abstract class Synop {
 			hour = Integer.parseInt(str.substring(2, 4));
 		} catch (NumberFormatException e) {
 			hour = Constants.INITIAL_VALUE;
+		}
+		try {
+	        day = Integer.parseInt(str.substring(0, 2));
+		} catch (NumberFormatException e) {
+			day = Constants.INITIAL_VALUE;
 		}
 	}
 	
@@ -175,14 +187,14 @@ public abstract class Synop {
 		}
 	}
 	private void setOvercast() {
-		int overcastInt = Character.getNumericValue(windString.charAt(0));
+		octa = Character.getNumericValue(windString.charAt(0));
 		
-		if (overcastInt < 0 || overcastInt > 9)
+		if (octa < 0 || octa > 9)
 			return;
 		
-		if (overcastInt == 0)
+		if (octa == 0)
 			overcast = Constants.CLEAR_SKY;
-		else if (overcastInt > 0 && overcastInt < 8)
+		else if (octa > 0 && octa < 8)
 			overcast = Constants.CLOUDY;
 		else 
 			overcast = Constants.SKY_NOT_VISIBLE;
@@ -299,5 +311,58 @@ public abstract class Synop {
 	
 	public float getPressure() {
 		return pressure;
+	}
+	
+	public int getOcta() {
+		return octa;
+	}
+	
+	public String getWindUnit() {
+		if (getWindIndicator() == Constants.WS_WILDTYPE_IN_MPS || getWindIndicator() == Constants.WS_ANEMOMETER_IN_MPS) {
+			return "m/s";
+		} else {
+			return "knots";
+		}
+	}
+	
+	public String getWindSource() {
+		if (getWindIndicator() == Constants.WS_WILDTYPE_IN_MPS || getWindIndicator() == Constants.WS_WILDTYPE_IN_KNOT) {
+			return "estimated";
+		} else {
+			return "anemometer";
+		}
+	}
+	
+	/**
+	 * display synop data in a human-readable format
+	 */
+	public String toString() {
+		StringBuilder sb = new StringBuilder("station type : " + this.getStationType());
+		sb.append("\nstation code : " + this.getStationCode());
+		sb.append("\nobservation timestamp (y/m/d h) : " + this.getYear() + "/" + this.getMonth() + "/" + this.getDay() + " " + this.getHour() + ":00 UTC");
+		
+		sb.append("\nwind indicator : " + this.getWindIndicator());
+		sb.append("\nwind speed : " + this.getWindSpeed() + " " + this.getWindUnit() + " (" + this.getWindSource() + ")");
+		sb.append("\nwind dir   : " + getWindDirection() + " degrees");
+		
+		sb.append("\novercast : " + this.getOvercast());
+		sb.append("\novercast in Octa : " + this.getOcta() + "/8");
+		
+		sb.append("\nhorizontal visibility : " + this.getHorizontalVisibility());
+		sb.append("\ntemperature : " + this.getTemperature());
+		
+		sb.append("\npressure   : " + getPressure() + " in hPa");
+
+		return sb.toString();
+	}
+	
+	/**
+	 * Retrieve the full report string value. This is the report in its original
+	 * form
+	 * 
+	 * @return The original report string.
+	 */
+	public String getReportString() {
+		return String.join(" ", stringArray);
 	}
 }
