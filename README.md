@@ -18,5 +18,7 @@ OOXX FRP31 13221 99052 70527 ///// 00091 26/// /0000 10248 29095 30166 92247 333
 Data is saved in PostgreSQL database. The queries are sent directly from the application.
 
 ---
-##Treeware License
+Treeware License
 Basically MIT License, but if you use the code (learning or project purposes), you have to plant at least one tree at some future time.
+
+Alternative licence if needed to be applied: Eclipse Public License.
